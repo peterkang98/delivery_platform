@@ -42,3 +42,4 @@ out/
 
 #### QueryDSL ###
 /build/generated/
+generated/
