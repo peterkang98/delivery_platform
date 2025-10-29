@@ -6,4 +6,4 @@ ENV DB_DDL_AUTO=create
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
-EXPOSE 8080
+EXPOSE 3000
