@@ -65,5 +65,4 @@ jobs:
             echo "이미지 Pull"
             sudo docker pull ${{ env.IMAGE_URI }}
 
-            sudo docker run -d --name myapp -p 3000:3000 -e DB_URL=${{ secrets.DB_URL }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e DB_DDL_AUTO=update ${{ env.IMAGE_URI }}
+            sudo docker run -d --name myapp -p 3000:3000 -e DB_URL=${{ secrets.DB_URL }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_DDL_AUTO=update ${{ env.IMAGE_URI }}
