@@ -22,4 +22,4 @@ logging:
     org.hibernate.SQL: warn
 
 server:
-  port: 3000
+  port: 8080
