@@ -49,16 +49,6 @@ jobs:
       - name: Executing remote ssh commands # AWS EC2 서버 SSH로 접속하고 deploy.sh 실행
         uses: appleboy/ssh-action@v0.1.6
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish container image
-        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-
-      - name: Executing remote ssh commands # AWS EC2 서버 SSH로 접속하고 deploy.sh 실행
-        uses: appleboy/ssh-action@v0.1.6
-        with:
           host: ${{ secrets.REMOTE_IP }} # 인스턴스 IP
           username: ${{ secrets.REMOTE_USER }} # 우분투 아이디
           key: ${{ secrets.REMOTE_PRIVATE_KEY }} # ec2 instance pem key
@@ -68,14 +58,16 @@ jobs:
             sudo docker stop myapp || true
             sudo docker rm myapp || true
             sudo docker rmi ${{ env.IMAGE_URI }} || true
+
             echo "GHCR 로그인"
             echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
             echo "이미지 Pull"
             sudo docker pull ${{ env.IMAGE_URI }}
-            sudo docker run -d --name myapp -p 3000:8080 \
+
+            sudo docker run -d --name myapp -p 3000:3000 \
             -e DB_URL=${{ secrets.DB_URL }} \
             -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_DDL_AUTO=update \
             ${{ env.IMAGE_URI }}
-            
