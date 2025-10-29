@@ -1,29 +1,29 @@
 spring:
   datasource:
     url: ${DB_URL}
-    driver-class-name: ${DB_DRIVER}
+    driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
   h2:
     console:
-      enabled: ${H2_CONSOLE_ENABLED}
+      enabled: false
 
   jpa:
     hibernate:
-      ddl-auto: ${DDL_AUTO}
+      ddl-auto: validate
     properties:
       hibernate:
-        show_sql: ${SHOW_SQL}
+        show_sql: false
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: localhost
+      port: 6379
 
 logging:
   level:
-    org.hibernate.SQL: ${SQL_LOG_LEVEL}
+    org.hibernate.SQL: warn
 
 server:
-  port: ${SERVER_PORT}
+  port: 8080
