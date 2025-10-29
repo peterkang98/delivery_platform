@@ -5,10 +5,6 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
-  h2:
-    console:
-      enabled: false
-
   jpa:
     hibernate:
       ddl-auto: validate
