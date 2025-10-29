@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: ${DB_DRIVER}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO}
+    properties:
+      hibernate:
+        show_sql: ${SHOW_SQL}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+logging:
+  level:
+    org.hibernate.SQL: ${SQL_LOG_LEVEL}
+
+server:
+  port: ${SERVER_PORT}
