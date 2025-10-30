@@ -13,8 +13,7 @@ class GlobalExceptionTest {
     @DisplayName("ErrorCode로 예외 생성 시 메시지는 ErrorCode의 메시지를 사용")
     void create_exception_with_error_code() {
         // given
-        ErrorCode errorCode = GlobalErrorCode.INVALID_INPUT_VALUE;
-        String customMessage = "이메일 형식이 올바르지 않습니다.";
+        ErrorCode errorCode = GlobalErrorCode.INTERNAL_SERVER_ERROR;
 
         // when
         TestGlobalException exception = new TestGlobalException(errorCode);
@@ -32,12 +31,12 @@ class GlobalExceptionTest {
         String customMessage = "이메일 형식이 올바르지 않습니다.";
 
         // when
-        TestGlobalException exception = new TestGlobalException(errorCode);
+        TestGlobalException exception = new TestGlobalException(errorCode, customMessage);
 
         // then
         assertThat(exception.getErrorCode()).isEqualTo(errorCode);
         assertThat(exception.getMessage()).isEqualTo(customMessage);
-        assertThat(exception.getMessage()).isNotEqual(errorCode.getMessage());
+        assertThat(exception.getMessage()).isNotEqualTo(errorCode.getMessage());
     }
 
 
@@ -54,7 +53,7 @@ class GlobalExceptionTest {
         // then
         assertThat(exception.getErrorCode()).isEqualTo(errorCode);
         assertThat(exception.getMessage()).isEqualTo(errorCode.getMessage());
-        assertThat(exception.getCause).isEqualTo(cause);
+        assertThat(exception.getCause()).isEqualTo(cause);
     }
 
     @Test
@@ -112,7 +111,7 @@ class GlobalExceptionTest {
         TestGlobalException exception = new TestGlobalException(errorCode);
 
         // then
-        assertThat(exception.getStackTrace()).isNotEmpty():
+        assertThat(exception.getStackTrace()).isNotEmpty();
         assertThat(exception.getStackTrace()[0].getClassName())
                 .contains("GlobalExceptionTest");
     }
@@ -123,7 +122,7 @@ class GlobalExceptionTest {
             super(errorCode);
         }
 
-        public TestGlobalException(Error errorCode, String message) {
+        public TestGlobalException(ErrorCode errorCode, String message) {
             super(errorCode, message);
         }
 
