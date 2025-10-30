@@ -1,4 +1,72 @@
 package xyz.sparta_project.manjok.global.common.dto;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import xyz.sparta_project.manjok.global.common.utils.UuidUtils;
+
+import java.time.LocalDateTime;
+
+/**
+ * 기본 엔티티
+ * - ID: UUID 36자 자동 생성
+ * - createdAt: 서버 현재 시간 자동 설정
+ * 
+ * 사용 예시
+ * <pre>
+ *     {@code
+ *      @Entity
+ *      public class Entity extends BaseEntity {
+ *          private String data;
+ *          //ID와 CreatedAt는 자동 관리
+ *      }
+ *     }
+ * </pre>
+ * */
+@Getter
+@MappedSuperclass
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BaseEntity {
+
+    /**
+     * UUID 기반 ID (36자)
+     * */
+    @Id
+    @Column(name = "id", length = 36, updatable = false, nullable = false)
+    private String id = UuidUtils.generate();
+
+    /**
+     * 생성 시간 (서버 시간 기준)
+     * */
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * 엔티티 생성 시 ID와 생성 시간 자동 설정
+     * */
+    @PrePersist
+    protected void onCreate() {
+        if (this.id == null) {
+            this.id = UuidUtils.generate();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if(!(obj instanceof BaseEntity that)) return false;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
