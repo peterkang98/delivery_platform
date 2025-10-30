@@ -43,18 +43,12 @@ public class BaseEntity {
      * */
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
+    
     /**
-     * 엔티티 생성 시 ID와 생성 시간 자동 설정
+     * UUID 재생성 전략
      * */
-    @PrePersist
-    protected void onCreate() {
-        if (this.id == null) {
-            this.id = UuidUtils.generate();
-        }
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
+    public void regenerateId() {
+        this.id = UuidUtils.generate();
     }
 
     @Override
