@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
  * 기본 엔티티
  * - ID: UUID 36자 자동 생성
  * - createdAt: 서버 현재 시간 자동 설정
- * 
  * 사용 예시
  * <pre>
  *     {@code
