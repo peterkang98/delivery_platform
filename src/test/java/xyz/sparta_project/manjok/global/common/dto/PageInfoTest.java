@@ -11,7 +11,7 @@ class PageInfoTest {
 
     @Test
     @DisplayName("정상적인 중간 페이지 정보 생성")
-    void creat_middle_pageInfo() {
+    void creat_middle_page_info_successfully() {
         // Given
         int page = 2;
         int size = 10;
@@ -43,7 +43,7 @@ class PageInfoTest {
 
     @Test
     @DisplayName("첫 페이지 플래그 검증")
-    void create_firs_pageInfo() {
+    void create_first_page_info_with_corrent_flags() {
         //Given
         int page = 0;
         int size = 10;
@@ -69,7 +69,7 @@ class PageInfoTest {
     
     @Test
     @DisplayName("마지막 페이지 플래그 검증")
-    void creat_last_pageInfo() {
+    void creat_last_page_info_with_correct_flags() {
         //Given
         int page = 9;
         int size = 10;
@@ -89,7 +89,7 @@ class PageInfoTest {
 
     @Test
     @DisplayName("음수 값으로 생성 시 예외 발생")
-    void creat_with_negative_values() {
+    void throw_exception_when_created_with_negative_values() {
         //Given & When & Then
         assertThatThrownBy(() -> PageInfo.of(-1, 10, 100, 10, 10))
                 .isInstanceOf(IllegalArgumentException.class)
