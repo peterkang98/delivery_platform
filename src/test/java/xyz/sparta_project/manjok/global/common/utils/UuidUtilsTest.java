@@ -4,10 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.lang.reflect.InvocationTargetException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @DisplayName("UuidUtils")
 class UuidUtilsTest {
@@ -107,15 +108,17 @@ class UuidUtilsTest {
 
     @Test
     @DisplayName("유틸리티 클래스는 인스턴스화할 수 없다.")
-    void utility_class_cannot_be_instantiated() {
+    void utility_class_cannot_be_instantiated() throws Exception {
         //When
-        assertThatThrownBy(() -> {
-            var constructor = UuidUtils.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            constructor.newInstance();
-        })
+        var constructor = UuidUtils.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        Throwable thrown = catchThrowable(constructor::newInstance);
+
+        assertThat(thrown)
+                .isInstanceOf(InvocationTargetException.class)
                 .hasCauseInstanceOf(AssertionError.class)
-                .hasMessageContaining("유틸리티 클래스는 인스턴스화 할 수 없습니다.");
+                .hasRootCauseMessage("유틸리티 클래스는 인스턴스화 할 수 없습니다.");
     }
 
 
