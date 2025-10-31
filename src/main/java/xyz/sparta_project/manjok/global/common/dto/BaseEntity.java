@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @Getter
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BaseEntity {
+public abstract class BaseEntity {
 
     /**
      * UUID 기반 ID (36자)
