@@ -104,7 +104,7 @@ public class EventRetryService {
         private final String eventName;
         private final String payload;
 
-        public RetryEvent(String eventName, String payload) {  // ✅ eventName
+        public RetryEvent(String eventName, String payload) {
             this.eventName = eventName;
             this.payload = payload;
         }

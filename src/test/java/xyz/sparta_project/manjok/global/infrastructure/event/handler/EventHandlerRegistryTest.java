@@ -146,6 +146,77 @@ class EventHandlerRegistryTest {
         assertThat(eventNames).contains("TestEvent", "AnotherEvent");
     }
 
+    @Test
+    @DisplayName("이벤트 이름으로 Class를 조회할 수 있다")
+    void get_event_class_by_name_returns_class() {
+        // given
+        TestEventHandler handler = new TestEventHandler();
+        Map<String, Object> handlers = new HashMap<>();
+        handlers.put("testEventHandler", handler);
+
+        when(applicationContext.getBeansWithAnnotation(EventHandler.class))
+                .thenReturn(handlers);
+
+        registry.init();
+
+        // when
+        Class<?> eventClass = registry.getEventClassByName("TestEvent");
+
+        // then
+        assertThat(eventClass).isEqualTo(TestEvent.class);
+    }
+
+    @Test
+    @DisplayName("등록되지 않은 이벤트 이름으로 Class 조회 시 예외가 발생한다")
+    void get_event_class_by_name_throws_exception_for_unregistered_name() {
+        // given
+        when(applicationContext.getBeansWithAnnotation(EventHandler.class))
+                .thenReturn(new HashMap<>());
+
+        registry.init();
+
+        // when & then
+        assertThatThrownBy(() -> registry.getEventClassByName("UnregisteredEvent"))
+                .isInstanceOf(EventException.class)
+                .hasMessageContaining("등록된 이벤트 클래스가 없습니다");
+    }
+
+    @Test
+    @DisplayName("이벤트 이름으로 핸들러를 조회할 수 있다")
+    void get_handler_by_name_returns_handler() {
+        // given
+        TestEventHandler handler = new TestEventHandler();
+        Map<String, Object> handlers = new HashMap<>();
+        handlers.put("testEventHandler", handler);
+
+        when(applicationContext.getBeansWithAnnotation(EventHandler.class))
+                .thenReturn(handlers);
+
+        registry.init();
+
+        // when
+        EventHandlerProcessor<?> result = registry.getHandlerByName("TestEvent");
+
+        // then
+        assertThat(result).isEqualTo(handler);
+    }
+
+    @Test
+    @DisplayName("등록되지 않은 이벤트 이름으로 핸들러 조회 시 예외가 발생한다")
+    void get_handler_by_name_throws_exception_for_unregistered_name() {
+        // given
+        when(applicationContext.getBeansWithAnnotation(EventHandler.class))
+                .thenReturn(new HashMap<>());
+
+        registry.init();
+
+        // when & then
+        assertThatThrownBy(() -> registry.getHandlerByName("UnregisteredEvent"))
+                .isInstanceOf(EventException.class)
+                .hasMessageContaining("등록된 이벤트 클래스가 없습니다");
+    }
+
+
     //테스트용 이벤트 클래스
     private static class TestEvent {
         private String data;

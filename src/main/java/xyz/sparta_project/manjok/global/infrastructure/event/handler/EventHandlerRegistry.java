@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 public class EventHandlerRegistry {
     private final ApplicationContext applicationContext;
     private final Map<Class<?>, EventHandlerProcessor<?>> handlers = new HashMap<>();
+    private final Map<String, Class<?>> eventNameToClassMap = new HashMap<>();
 
     public EventHandlerRegistry(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -43,6 +44,8 @@ public class EventHandlerRegistry {
             if (handler instanceof EventHandlerProcessor) {
                 Class<?> eventType = annotation.eventType();
                 handlers.put(eventType, (EventHandlerProcessor<?>) handler);
+                eventNameToClassMap.put(eventType.getSimpleName(), eventType);
+
                 log.info("이벤트 핸들러 등록: {} -> {}",
                         eventType.getSimpleName(),
                         handler.getClass().getSimpleName());
@@ -94,5 +97,36 @@ public class EventHandlerRegistry {
         return handlers.keySet().stream()
                 .map(Class::getSimpleName)
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * 이벤트 이름으로 Class 조회
+     *
+     * @param eventName 이벤트 SimpleName (예: "OrderCompletedEvent")
+     * @return 이벤트 Class
+     */
+    public Class<?> getEventClassByName(String eventName) {
+        Class<?> eventClass = eventNameToClassMap.get(eventName);
+
+        if (eventClass == null) {
+            throw new EventException(
+                    EventErrorCode.EVENT_PROCESSING_FAILED,
+                    "등록된 이벤트 클래스가 없습니다: " + eventName
+            );
+        }
+
+        return eventClass;
+    }
+
+    /**
+     * 이벤트 이름으로 핸들러 조회
+     *
+     * @param eventName 이벤트 SimpleName
+     * @return 이벤트 핸들러
+     */
+    @SuppressWarnings("unchecked")
+    public EventHandlerProcessor<?> getHandlerByName(String eventName) {
+        Class<?> eventClass = getEventClassByName(eventName);
+        return getHandler(eventClass);
     }
 }
