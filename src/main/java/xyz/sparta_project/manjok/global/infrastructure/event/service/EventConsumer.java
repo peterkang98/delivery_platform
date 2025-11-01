@@ -29,7 +29,6 @@ public class EventConsumer {
 
     /**
      * 모든 이벤트를 수신하는 리스너
-     * - 실제 구현에서는 특정 이벤트 타입별로 분리된 핸들러 사용 권장
      *
      * @param event 수신된 이벤트
      * */

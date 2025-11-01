@@ -9,6 +9,8 @@ import xyz.sparta_project.manjok.global.infrastructure.event.exception.EventExce
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 이벤트 핸들러 레지스트리
@@ -81,5 +83,16 @@ public class EventHandlerRegistry {
      * */
     public boolean hasHandler(Class<?> eventType) {
         return handlers.containsKey(eventType);
+    }
+
+    /**
+     * 등록된 모든 이벤트 이름 목록 반환
+     *
+     * @return 이벤트 이름(SimpleName) Set
+     */
+    public Set<String> getRegisteredEventNames() {
+        return handlers.keySet().stream()
+                .map(Class::getSimpleName)
+                .collect(Collectors.toSet());
     }
 }

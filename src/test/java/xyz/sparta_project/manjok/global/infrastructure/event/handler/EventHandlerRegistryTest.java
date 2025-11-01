@@ -8,6 +8,7 @@ import xyz.sparta_project.manjok.global.infrastructure.event.exception.EventExce
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -119,6 +120,30 @@ class EventHandlerRegistryTest {
         // then
         assertThat(registry.hasHandler(TestEvent.class)).isTrue();
         assertThat(registry.hasHandler(AnotherEvent.class)).isTrue();
+    }
+
+    @Test
+    @DisplayName("등록된 모든 이벤트 이름 목록을 반환한다.")
+    void get_registered_event_names_returns_all_event_names() {
+        // given
+        TestEventHandler handler1 = new TestEventHandler();
+        AnotherEventHandler handler2 = new AnotherEventHandler();
+
+        Map<String, Object> handlers = new HashMap<>();
+        handlers.put("testEventHandler", handler1);
+        handlers.put("anotherEventHandler", handler2);
+
+        when(applicationContext.getBeansWithAnnotation(EventHandler.class))
+                .thenReturn(handlers);
+
+        registry.init();
+
+        // when
+        Set<String> eventNames = registry.getRegisteredEventNames();
+
+        // then
+        assertThat(eventNames).hasSize(2);
+        assertThat(eventNames).contains("TestEvent", "AnotherEvent");
     }
 
     //테스트용 이벤트 클래스

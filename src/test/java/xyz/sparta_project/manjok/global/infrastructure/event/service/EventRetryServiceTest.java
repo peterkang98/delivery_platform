@@ -12,10 +12,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventLog;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventStatus;
+import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandlerRegistry;
 import xyz.sparta_project.manjok.global.infrastructure.event.repository.EventLogRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,6 +37,9 @@ class EventRetryServiceTest {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
+    private EventHandlerRegistry eventHandlerRegistry;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     @InjectMocks
@@ -50,6 +55,8 @@ class EventRetryServiceTest {
 
         when(eventLogRepository.findAllByStatus(EventStatus.FAILED))
                 .thenReturn(List.of(eventLog));
+        when(eventHandlerRegistry.getRegisteredEventNames())
+                .thenReturn(Set.of("TestEvent"));
 
         // when
         eventRetryService.retryFailedEvents();
@@ -71,6 +78,8 @@ class EventRetryServiceTest {
 
         when(eventLogRepository.findAllByStatus(EventStatus.FAILED))
                 .thenReturn(List.of(eventLog));
+        when(eventHandlerRegistry.getRegisteredEventNames())
+                .thenReturn(Set.of("TestEvent"));
 
         // when
         eventRetryService.retryFailedEvents();
@@ -109,6 +118,8 @@ class EventRetryServiceTest {
 
         when(eventLogRepository.findAllByStatus(EventStatus.FAILED))
                 .thenReturn(List.of(eventLog1, eventLog2));
+        when(eventHandlerRegistry.getRegisteredEventNames())
+                .thenReturn(Set.of("TestEvent1","TestEvent2"));
 
         // when
         eventRetryService.retryFailedEvents();

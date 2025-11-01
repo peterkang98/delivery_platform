@@ -9,13 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventLog;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventStatus;
+import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandlerRegistry;
 import xyz.sparta_project.manjok.global.infrastructure.event.repository.EventLogRepository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 이벤트 재시도 서비스
  * - 실패한 이벤트를 주기적으로 재시도
+ * - 등록된 핸들러가 있는 이벤트만 재시도
  * - 재시도 횟수 제한 관리
  * */
 @Slf4j
@@ -26,6 +29,7 @@ public class EventRetryService {
 
     private final EventLogRepository eventLogRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final EventHandlerRegistry eventHandlerRegistry;
     private final ObjectMapper objectMapper;
 
     /**
@@ -45,8 +49,12 @@ public class EventRetryService {
 
         log.info("재시도할 이벤트 수: {}", failedEvents.size());
 
+        Set<String> registeredEventNames = eventHandlerRegistry.getRegisteredEventNames();
+
         for (EventLog eventLog : failedEvents) {
-            processRetry(eventLog);
+            if (registeredEventNames.contains(eventLog.getEventName())) {
+                processRetry(eventLog);
+            }
         }
 
         log.info("실패한 이벤트 재시도 작업 완료");
