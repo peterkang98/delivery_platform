@@ -13,5 +13,5 @@ public interface EventHandlerProcessor<T> {
      * @param event 처리할 이벤트
      * @throws Exception 처리 중 발생한 예외
      * */
-    void handle(T evnet) throws Exception;
+    void handle(T event) throws Exception;
 }
