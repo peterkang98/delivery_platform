@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
     runtimeOnly 'com.mysql:mysql-connector-j'
 //    runtimeOnly 'com.h2database:h2'
 
@@ -41,9 +42,6 @@ dependencies {
 
     //OAuth2 리소스 서버 기능 (JWT 기반 인증/인가 처리용)
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-
-    //keyCloak
-    implementation 'org.keycloak:keycloak-admin-client:26.0.7'
 
 	// QueryDSL 의존성
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'

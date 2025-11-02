@@ -2,8 +2,8 @@ spring:
   application:
     name: manjok
   profiles:
-#    active: main
     active: develop
+#    active: main
 
   jpa:
     open-in-view: false
