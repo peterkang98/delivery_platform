@@ -31,29 +31,27 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     runtimeOnly 'com.mysql:mysql-connector-j'
-//    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.h2database:h2'
 
     // 애플리케이션 상태 모니터링 및 메트릭 수집용
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // jwt 라이브러리
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
     // OAuth2 클라이언트 기능 (소셜 로그인 등 외부 인증 서버 연동 시 사용)
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+//    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
     //OAuth2 리소스 서버 기능 (JWT 기반 인증/인가 처리용)
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-
-    //keyCloak
-    implementation 'org.keycloak:keycloak-admin-client:26.0.7'
+//    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
 	// QueryDSL 의존성
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
     annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
     annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
-
-
-    //.env 로드 의존성
-	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 
     // DevTools (개발 환경 전용)
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
