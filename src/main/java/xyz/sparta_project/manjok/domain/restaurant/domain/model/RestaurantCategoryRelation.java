@@ -26,6 +26,12 @@ public class RestaurantCategoryRelation {
     private LocalDateTime createdAt;
     private String createdBy;
 
+    @Builder.Default
+    private boolean isDeleted = false;
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+
+
     public static RestaurantCategoryRelation create(String restaurantId, String categoryId,
                                                     boolean isPrimary, String createdBy) {
         return RestaurantCategoryRelation.builder()
@@ -34,6 +40,23 @@ public class RestaurantCategoryRelation {
                 .isPrimary(isPrimary)
                 .createdAt(LocalDateTime.now())
                 .createdBy(createdBy)
+                .isDeleted(false)
                 .build();
+    }
+
+    /**
+     * 관계 삭제 (soft delete)
+     */
+    public void delete(String deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+    /**
+     * 관계가 활성 상태인지 확인
+     */
+    public boolean isActive() {
+        return !isDeleted;
     }
 }
