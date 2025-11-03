@@ -74,4 +74,25 @@ class RestaurantCategoryRelationTest {
         assertThat(relation1).isNotEqualTo(relation3);  // 다른 category
         assertThat(relation1.hashCode()).isEqualTo(relation2.hashCode());
     }
+
+    @Test
+    @DisplayName("관계 삭제 시 isDeleted가 true로 설정되고 비활성 상태가 된다")
+    void should_mark_relation_as_deleted_and_inactive() {
+        // given
+        RestaurantCategoryRelation relation = RestaurantCategoryRelation.create(
+                "REST001",
+                "CAT001",
+                true,
+                "admin1"
+        );
+
+        // when
+        relation.delete("admin2");
+
+        // then
+        assertThat(relation.isDeleted()).isTrue();
+        assertThat(relation.getDeletedBy()).isEqualTo("admin2");
+        assertThat(relation.getDeletedAt()).isNotNull();
+        assertThat(relation.isActive()).isFalse();
+    }
 }
