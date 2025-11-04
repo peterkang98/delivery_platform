@@ -1,24 +1,25 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.MenuCategory;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * MenuCategory JPA Entity
- * - 메뉴 분류 (메인, 사이드, 음료 등)
  * - BaseEntity 상속으로 ID와 createdAt 자동 관리
- * - 셀프 조인은 ID로만 참조
+ * - Restaurant에 종속됨 (영속성 전이)
+ * - MenuCategoryRelation을 영속성 전이로 관리
  */
 @Entity
 @Table(name = "p_menu_categories", indexes = {
@@ -32,10 +33,13 @@ import java.time.LocalDateTime;
 @Builder
 public class MenuCategoryEntity extends BaseEntity {
 
-    // 기본 정보
-    @Column(name = "restaurant_id", length = 36, nullable = false)
-    private String restaurantId;
+    // 소속 정보 (Restaurant와의 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    @Setter
+    private RestaurantEntity restaurant;
 
+    // 기본 정보
     @Column(name = "category_name", length = 100, nullable = false)
     private String categoryName;
 
@@ -77,6 +81,34 @@ public class MenuCategoryEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
+    // ==================== 연관 관계 (영속성 전이) ====================
+
+    /**
+     * MenuCategory ↔ Menu (ManyToMany via MenuCategoryRelation)
+     * 양방향 전이: MenuCategory와 Relation 모두에서 전이
+     */
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<MenuCategoryRelationEntity> menuRelations = new HashSet<>();
+
+    // ==================== 연관관계 편의 메서드 ====================
+
+    /**
+     * 메뉴 관계 추가 (양방향 관계 설정)
+     */
+    public void addMenuRelation(MenuCategoryRelationEntity relation) {
+        menuRelations.add(relation);
+        relation.setCategory(this);
+    }
+
+    /**
+     * 메뉴 관계 제거
+     */
+    public void removeMenuRelation(MenuCategoryRelationEntity relation) {
+        menuRelations.remove(relation);
+        relation.setCategory(null);
+    }
+
     // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
@@ -88,7 +120,6 @@ public class MenuCategoryEntity extends BaseEntity {
         }
 
         MenuCategoryEntity entity = MenuCategoryEntity.builder()
-                .restaurantId(domain.getRestaurantId())
                 .categoryName(domain.getCategoryName())
                 .description(domain.getDescription())
                 .parentCategoryId(domain.getParentCategoryId())
@@ -121,7 +152,7 @@ public class MenuCategoryEntity extends BaseEntity {
         return MenuCategory.builder()
                 .id(this.getId())
                 .createdAt(this.getCreatedAt())
-                .restaurantId(this.restaurantId)
+                .restaurantId(this.restaurant != null ? this.restaurant.getId() : null)
                 .categoryName(this.categoryName)
                 .description(this.description)
                 .parentCategoryId(this.parentCategoryId)
@@ -134,6 +165,10 @@ public class MenuCategoryEntity extends BaseEntity {
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)
+                .menuIds(this.menuRelations.stream()
+                        .filter(rel -> !rel.getIsDeleted())
+                        .map(MenuCategoryRelationEntity::getMenuId)
+                        .collect(Collectors.toSet()))
                 .build();
     }
 

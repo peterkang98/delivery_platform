@@ -6,7 +6,7 @@ import xyz.sparta_project.manjok.global.presentation.exception.ErrorCode;
 
 /**
  * 레스토랑 도메인 관련 에러 코드
- * */
+ */
 @Getter
 @RequiredArgsConstructor
 public enum RestaurantErrorCode implements ErrorCode {
@@ -28,7 +28,21 @@ public enum RestaurantErrorCode implements ErrorCode {
     // OperatingDay 관련 에러 (RESTAURANT_030~039)
     OPERATING_DAY_NOT_FOUND("RESTAURANT_030", "운영시간 정보를 찾을 수 없습니다.", 404),
     INVALID_OPERATING_TIME("RESTAURANT_031", "유효하지 않은 운영시간입니다.", 400),
-    BREAK_TIME_OUT_OF_OPERATING_TIME("RESTAURANT_032", "브레이크 타임은 운영시간 내에 있어야 합니다.", 400);
+    BREAK_TIME_OUT_OF_OPERATING_TIME("RESTAURANT_032", "브레이크 타임은 운영시간 내에 있어야 합니다.", 400),
+
+    // Category 관련 에러 (RESTAURANT_040~049)
+    CATEGORY_NOT_FOUND("RESTAURANT_040", "카테고리를 찾을 수 없습니다.", 404),
+
+    // Event 처리 에러 (RESTAURANT_050~059)
+    EVENT_PROCESSING_FAILED("RESTAURANT_050", "이벤트 처리 중 오류가 발생했습니다.", 500),
+    ORDER_EVENT_PROCESSING_FAILED("RESTAURANT_051", "주문 이벤트 처리 중 오류가 발생했습니다.", 500),
+    REVIEW_EVENT_PROCESSING_FAILED("RESTAURANT_052", "리뷰 이벤트 처리 중 오류가 발생했습니다.", 500),
+    WISHLIST_EVENT_PROCESSING_FAILED("RESTAURANT_053", "찜 이벤트 처리 중 오류가 발생했습니다.", 500),
+    STATISTICS_UPDATE_FAILED("RESTAURANT_054", "통계 업데이트 중 오류가 발생했습니다.", 500),
+
+    // Relation 관련 에러 (RESTAURANT_060~069)
+    RELATION_NOT_FOUND("RESTAURANT_060", "관계 정보를 찾을 수 없습니다.", 404),
+    RELATION_NOT_BELONG_TO_RESTAURANT("RESTAURANT_061", "해당 관계는 이 레스토랑에 속하지 않습니다.", 403);
 
     private final String code;
     private final String message;

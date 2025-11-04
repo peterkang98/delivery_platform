@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * MenuEntity 변환 테스트
+ * MenuEntity 변환 테스트 (연관관계 매핑 적용)
  */
 class MenuEntityTest {
 
@@ -43,7 +43,8 @@ class MenuEntityTest {
         // then
         assertThat(entity).isNotNull();
         assertThat(entity.getId()).isEqualTo("menu-id-123");
-        assertThat(entity.getRestaurantId()).isEqualTo("restaurant-456");
+        // Restaurant 연관관계는 null (Restaurant에서 설정해야 함)
+        assertThat(entity.getRestaurant()).isNull();
         assertThat(entity.getMenuName()).isEqualTo("불고기 정식");
         assertThat(entity.getDescription()).isEqualTo("맛있는 불고기");
         assertThat(entity.getIngredients()).isEqualTo("소고기, 야채");
@@ -57,14 +58,24 @@ class MenuEntityTest {
         assertThat(entity.getReviewCount()).isEqualTo(20);
         assertThat(entity.getReviewRating()).isEqualByComparingTo(new BigDecimal("4.5"));
         assertThat(entity.getCreatedBy()).isEqualTo("owner");
+
+        // 연관관계 컬렉션 초기화 확인
+        assertThat(entity.getOptionGroups()).isEmpty();
+        assertThat(entity.getCategoryRelations()).isEmpty();
     }
 
     @Test
     @DisplayName("MenuEntity를 도메인 Menu로 변환")
     void toDomain_ShouldConvertEntityToMenu() {
         // given
+        // Restaurant 엔티티 생성
+        RestaurantEntity restaurant = RestaurantEntity.builder()
+                .ownerId(1L)
+                .restaurantName("테스트 레스토랑")
+                .isActive(true)
+                .build();
+
         MenuEntity entity = MenuEntity.builder()
-                .restaurantId("restaurant-789")
                 .menuName("김치찌개")
                 .description("얼큰한 김치찌개")
                 .ingredients("김치, 돼지고기")
@@ -80,12 +91,15 @@ class MenuEntityTest {
                 .createdBy("admin")
                 .build();
 
+        // 양방향 연관관계 설정
+        restaurant.addMenu(entity);
+
         // when
         Menu domain = entity.toDomain();
 
         // then
         assertThat(domain).isNotNull();
-        assertThat(domain.getRestaurantId()).isEqualTo("restaurant-789");
+        assertThat(domain.getRestaurantId()).isEqualTo(restaurant.getId());
         assertThat(domain.getMenuName()).isEqualTo("김치찌개");
         assertThat(domain.getDescription()).isEqualTo("얼큰한 김치찌개");
         assertThat(domain.getIngredients()).isEqualTo("김치, 돼지고기");
@@ -99,5 +113,59 @@ class MenuEntityTest {
         assertThat(domain.getReviewCount()).isEqualTo(40);
         assertThat(domain.getReviewRating()).isEqualByComparingTo(new BigDecimal("4.2"));
         assertThat(domain.getCreatedBy()).isEqualTo("admin");
+    }
+
+    @Test
+    @DisplayName("Menu와 Restaurant 양방향 연관관계 설정")
+    void addMenu_ShouldSetBidirectionalRelation() {
+        // given
+        RestaurantEntity restaurant = RestaurantEntity.builder()
+                .ownerId(1L)
+                .restaurantName("테스트 레스토랑")
+                .isActive(true)
+                .build();
+
+        MenuEntity menu = MenuEntity.builder()
+                .menuName("떡볶이")
+                .price(new BigDecimal("5000"))
+                .isAvailable(true)
+                .createdBy("owner")
+                .build();
+
+        // when
+        restaurant.addMenu(menu);
+
+        // then
+        assertThat(restaurant.getMenus()).hasSize(1);
+        assertThat(restaurant.getMenus()).contains(menu);
+        assertThat(menu.getRestaurant()).isEqualTo(restaurant);
+    }
+
+    @Test
+    @DisplayName("Menu에 OptionGroup 추가 시 양방향 연관관계 설정")
+    void addOptionGroup_ShouldSetBidirectionalRelation() {
+        // given
+        MenuEntity menu = MenuEntity.builder()
+                .menuName("아메리카노")
+                .price(new BigDecimal("4000"))
+                .isAvailable(true)
+                .build();
+
+        MenuOptionGroupEntity optionGroup = MenuOptionGroupEntity.builder()
+                .restaurantId("REST123")
+                .groupName("사이즈 선택")
+                .minSelection(1)
+                .maxSelection(1)
+                .isRequired(true)
+                .isActive(true)
+                .build();
+
+        // when
+        menu.addOptionGroup(optionGroup);
+
+        // then
+        assertThat(menu.getOptionGroups()).hasSize(1);
+        assertThat(menu.getOptionGroups()).contains(optionGroup);
+        assertThat(optionGroup.getMenu()).isEqualTo(menu);
     }
 }

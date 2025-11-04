@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * MenuOptionEntity 변환 테스트
+ * MenuOptionEntity 변환 테스트 (연관관계 매핑 적용)
  */
 class MenuOptionEntityTest {
 
@@ -40,7 +40,8 @@ class MenuOptionEntityTest {
         // then
         assertThat(entity).isNotNull();
         assertThat(entity.getId()).isEqualTo("OPTION123");
-        assertThat(entity.getOptionGroupId()).isEqualTo("GROUP456");
+        // OptionGroup 연관관계는 null (OptionGroup에서 설정해야 함)
+        assertThat(entity.getOptionGroup()).isNull();
         assertThat(entity.getMenuId()).isEqualTo("MENU789");
         assertThat(entity.getRestaurantId()).isEqualTo("REST012");
         assertThat(entity.getOptionName()).isEqualTo("Large");
@@ -57,8 +58,17 @@ class MenuOptionEntityTest {
     @DisplayName("MenuOptionEntity를 도메인 MenuOption으로 변환")
     void toDomain_ShouldConvertEntityToMenuOption() {
         // given
+        // OptionGroup 엔티티 생성
+        MenuOptionGroupEntity optionGroup = MenuOptionGroupEntity.builder()
+                .restaurantId("REST345")
+                .groupName("맵기 선택")
+                .minSelection(1)
+                .maxSelection(1)
+                .isRequired(true)
+                .isActive(true)
+                .build();
+
         MenuOptionEntity entity = MenuOptionEntity.builder()
-                .optionGroupId("GROUP789")
                 .menuId("MENU012")
                 .restaurantId("REST345")
                 .optionName("매운맛")
@@ -71,12 +81,15 @@ class MenuOptionEntityTest {
                 .createdBy("admin")
                 .build();
 
+        // 양방향 연관관계 설정
+        optionGroup.addOption(entity);
+
         // when
         MenuOption domain = entity.toDomain();
 
         // then
         assertThat(domain).isNotNull();
-        assertThat(domain.getOptionGroupId()).isEqualTo("GROUP789");
+        assertThat(domain.getOptionGroupId()).isEqualTo(optionGroup.getId());
         assertThat(domain.getMenuId()).isEqualTo("MENU012");
         assertThat(domain.getRestaurantId()).isEqualTo("REST345");
         assertThat(domain.getOptionName()).isEqualTo("매운맛");
@@ -87,5 +100,37 @@ class MenuOptionEntityTest {
         assertThat(domain.getDisplayOrder()).isEqualTo(1);
         assertThat(domain.getPurchaseCount()).isEqualTo(100);
         assertThat(domain.getCreatedBy()).isEqualTo("admin");
+    }
+
+    @Test
+    @DisplayName("MenuOption과 MenuOptionGroup 양방향 연관관계 설정")
+    void addOption_ShouldSetBidirectionalRelation() {
+        // given
+        MenuOptionGroupEntity optionGroup = MenuOptionGroupEntity.builder()
+                .restaurantId("REST123")
+                .groupName("사이즈 선택")
+                .minSelection(1)
+                .maxSelection(1)
+                .isRequired(true)
+                .isActive(true)
+                .build();
+
+        MenuOptionEntity option = MenuOptionEntity.builder()
+                .menuId("MENU456")
+                .restaurantId("REST123")
+                .optionName("Medium")
+                .additionalPrice(new BigDecimal("500"))
+                .isAvailable(true)
+                .isDefault(true)
+                .displayOrder(2)
+                .build();
+
+        // when
+        optionGroup.addOption(option);
+
+        // then
+        assertThat(optionGroup.getOptions()).hasSize(1);
+        assertThat(optionGroup.getOptions()).contains(option);
+        assertThat(option.getOptionGroup()).isEqualTo(optionGroup);
     }
 }
