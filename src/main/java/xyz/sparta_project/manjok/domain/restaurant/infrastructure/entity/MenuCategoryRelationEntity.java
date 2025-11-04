@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.MenuCategoryRelation;
 
 import java.io.Serializable;
@@ -14,8 +15,9 @@ import java.time.LocalDateTime;
 
 /**
  * MenuCategoryRelation JPA Entity
- * - 메뉴와 카테고리 간의 다대다 관계
+ * - Menu와 MenuCategory 간의 다대다 관계 중간 테이블
  * - 복합키 사용 (menuId + categoryId)
+ * - 양방향 영속성 전이: Menu와 MenuCategory 모두에서 전이
  */
 @Entity
 @Table(name = "p_menu_category_relations", indexes = {
@@ -30,13 +32,19 @@ import java.time.LocalDateTime;
 @Builder
 public class MenuCategoryRelationEntity {
 
+    // Menu 측 연관관계
     @Id
-    @Column(name = "menu_id", length = 36, nullable = false)
-    private String menuId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id", nullable = false)
+    @Setter
+    private MenuEntity menu;
 
+    // MenuCategory 측 연관관계
     @Id
-    @Column(name = "category_id", length = 36, nullable = false)
-    private String categoryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    @Setter
+    private MenuCategoryEntity category;
 
     @Column(name = "restaurant_id", length = 36, nullable = false)
     private String restaurantId;
@@ -72,8 +80,6 @@ public class MenuCategoryRelationEntity {
         }
 
         return MenuCategoryRelationEntity.builder()
-                .menuId(domain.getMenuId())
-                .categoryId(domain.getCategoryId())
                 .restaurantId(domain.getRestaurantId())
                 .isPrimary(domain.isPrimary())
                 .createdAt(domain.getCreatedAt())
@@ -89,8 +95,8 @@ public class MenuCategoryRelationEntity {
      */
     public MenuCategoryRelation toDomain() {
         return MenuCategoryRelation.builder()
-                .menuId(this.menuId)
-                .categoryId(this.categoryId)
+                .menuId(this.menu != null ? this.menu.getId() : null)
+                .categoryId(this.category != null ? this.category.getId() : null)
                 .restaurantId(this.restaurantId)
                 .isPrimary(this.isPrimary)
                 .createdAt(this.createdAt)
@@ -99,6 +105,22 @@ public class MenuCategoryRelationEntity {
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)
                 .build();
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Menu ID 조회 (복합키용)
+     */
+    public String getMenuId() {
+        return this.menu != null ? this.menu.getId() : null;
+    }
+
+    /**
+     * Category ID 조회 (복합키용)
+     */
+    public String getCategoryId() {
+        return this.category != null ? this.category.getId() : null;
     }
 
     // ==================== 복합키 클래스 ====================
@@ -111,7 +133,7 @@ public class MenuCategoryRelationEntity {
     @AllArgsConstructor
     @EqualsAndHashCode
     public static class RelationId implements Serializable {
-        private String menuId;
-        private String categoryId;
+        private String menu;     // MenuEntity의 id 필드에 매핑
+        private String category; // MenuCategoryEntity의 id 필드에 매핑
     }
 }

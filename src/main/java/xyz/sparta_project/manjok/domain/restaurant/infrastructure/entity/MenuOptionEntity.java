@@ -1,14 +1,12 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.MenuOption;
 
@@ -17,9 +15,8 @@ import java.time.LocalDateTime;
 
 /**
  * MenuOption JPA Entity
- * - 메뉴의 개별 옵션 (Large, 매운맛, 치즈 추가 등)
  * - BaseEntity 상속으로 ID와 createdAt 자동 관리
- * - 옵션 그룹 ID로만 연관 관계 관리
+ * - MenuOptionGroup에 종속됨 (영속성 전이)
  */
 @Entity
 @Table(name = "p_menu_options", indexes = {
@@ -33,9 +30,11 @@ import java.time.LocalDateTime;
 @Builder
 public class MenuOptionEntity extends BaseEntity {
 
-    // 소속 정보
-    @Column(name = "option_group_id", length = 36, nullable = false)
-    private String optionGroupId;
+    // 소속 정보 (MenuOptionGroup과의 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "option_group_id", nullable = false)
+    @Setter
+    private MenuOptionGroupEntity optionGroup;
 
     @Column(name = "menu_id", length = 36, nullable = false)
     private String menuId;
@@ -92,7 +91,7 @@ public class MenuOptionEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
-    // 도메인 ↔ 엔티티 변환
+    // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
      * 도메인 모델을 엔티티로 변환
@@ -103,7 +102,6 @@ public class MenuOptionEntity extends BaseEntity {
         }
 
         MenuOptionEntity entity = MenuOptionEntity.builder()
-                .optionGroupId(domain.getOptionGroupId())
                 .menuId(domain.getMenuId())
                 .restaurantId(domain.getRestaurantId())
                 .optionName(domain.getOptionName())
@@ -139,7 +137,7 @@ public class MenuOptionEntity extends BaseEntity {
         return MenuOption.builder()
                 .id(this.getId())
                 .createdAt(this.getCreatedAt())
-                .optionGroupId(this.optionGroupId)
+                .optionGroupId(this.optionGroup != null ? this.optionGroup.getId() : null)
                 .menuId(this.menuId)
                 .restaurantId(this.restaurantId)
                 .optionName(this.optionName)
@@ -158,7 +156,7 @@ public class MenuOptionEntity extends BaseEntity {
                 .build();
     }
 
-    // Helper Methods
+    // ==================== Helper Methods ====================
 
     private void setIdFromDomain(String id) {
         try {

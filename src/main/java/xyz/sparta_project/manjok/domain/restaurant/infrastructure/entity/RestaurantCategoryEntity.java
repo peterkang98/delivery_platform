@@ -1,8 +1,6 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,15 +10,21 @@ import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantCategory;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * RestaurantCategory JPA Entity
- * - 레스토랑 업종 분류 (한식, 중식, 일식 등)
  * - BaseEntity 상속으로 ID와 createdAt 자동 관리
- * - 연관 관계는 ID로만 관리
+ * - Restaurant와 독립적으로 존재 (ManyToMany 관계)
+ * - RestaurantCategoryRelation을 영속성 전이로 관리
  */
 @Entity
-@Table(name = "p_restaurant_categories")
+@Table(name = "p_restaurant_categories", indexes = {
+        @Index(name = "idx_restaurant_category_code", columnList = "category_code"),
+        @Index(name = "idx_restaurant_category_is_active", columnList = "is_active")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -105,6 +109,34 @@ public class RestaurantCategoryEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
+    // ==================== 연관 관계 (영속성 전이) ====================
+
+    /**
+     * RestaurantCategory ↔ Restaurant (ManyToMany via RestaurantCategoryRelation)
+     * 양방향 전이: RestaurantCategory와 Relation 모두에서 전이
+     */
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RestaurantCategoryRelationEntity> restaurantRelations = new HashSet<>();
+
+    // ==================== 연관관계 편의 메서드 ====================
+
+    /**
+     * 레스토랑 관계 추가 (양방향 관계 설정)
+     */
+    public void addRestaurantRelation(RestaurantCategoryRelationEntity relation) {
+        restaurantRelations.add(relation);
+        relation.setCategory(this);
+    }
+
+    /**
+     * 레스토랑 관계 제거
+     */
+    public void removeRestaurantRelation(RestaurantCategoryRelationEntity relation) {
+        restaurantRelations.remove(relation);
+        relation.setCategory(null);
+    }
+
     // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
@@ -148,6 +180,11 @@ public class RestaurantCategoryEntity extends BaseEntity {
             entity.setCreatedAtFromDomain(domain.getCreatedAt());
         }
 
+        // 관계 설정은 별도로 처리 (양방향 참조 방지)
+        domain.getRestaurantRelations().forEach(relation ->
+                entity.addRestaurantRelation(RestaurantCategoryRelationEntity.fromDomain(relation))
+        );
+
         return entity;
     }
 
@@ -180,6 +217,9 @@ public class RestaurantCategoryEntity extends BaseEntity {
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)
+                .restaurantRelations(this.restaurantRelations.stream()
+                        .map(RestaurantCategoryRelationEntity::toDomain)
+                        .collect(Collectors.toSet()))
                 .build();
     }
 

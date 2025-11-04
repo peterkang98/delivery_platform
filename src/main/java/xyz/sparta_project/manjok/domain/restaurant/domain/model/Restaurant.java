@@ -549,14 +549,14 @@ public class Restaurant {
      * 메뉴 ID 생성
      */
     private String generateMenuId() {
-        return "MENU-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "MENU" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     /**
      * 카테고리 ID 생성
      */
     private String generateCategoryId() {
-        return "CAT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "CAT" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
     /**

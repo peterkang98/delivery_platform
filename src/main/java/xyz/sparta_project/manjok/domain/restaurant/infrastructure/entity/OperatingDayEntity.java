@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.DayType;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.OperatingDay;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.OperatingTimeType;
@@ -16,8 +17,8 @@ import java.time.LocalTime;
 
 /**
  * OperatingDay JPA Entity
- * - 레스토랑의 운영 시간 정보
- * - 복합키 사용 (restaurantId + dayType + timeType)
+ * - Restaurant에 종속됨 (영속성 전이)
+ * - 복합키 사용 (restaurant + dayType + timeType)
  * - BaseEntity를 상속받지 않음 (Value Object 성격)
  */
 @Entity
@@ -31,9 +32,12 @@ import java.time.LocalTime;
 @Builder
 public class OperatingDayEntity {
 
+    // Restaurant와의 관계
     @Id
-    @Column(name = "restaurant_id", length = 36, nullable = false)
-    private String restaurantId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    @Setter
+    private RestaurantEntity restaurant;
 
     @Id
     @Enumerated(EnumType.STRING)
@@ -78,7 +82,6 @@ public class OperatingDayEntity {
         }
 
         return OperatingDayEntity.builder()
-                .restaurantId(domain.getRestaurantId())
                 .dayType(domain.getDayType())
                 .timeType(domain.getTimeType())
                 .startTime(domain.getStartTime())
@@ -95,7 +98,7 @@ public class OperatingDayEntity {
      */
     public OperatingDay toDomain() {
         return OperatingDay.builder()
-                .restaurantId(this.restaurantId)
+                .restaurantId(this.restaurant != null ? this.restaurant.getId() : null)
                 .dayType(this.dayType)
                 .timeType(this.timeType)
                 .startTime(this.startTime)
@@ -105,6 +108,15 @@ public class OperatingDayEntity {
                 .breakEndTime(this.breakEndTime)
                 .note(this.note)
                 .build();
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Restaurant ID 조회 (복합키용)
+     */
+    public String getRestaurantId() {
+        return this.restaurant != null ? this.restaurant.getId() : null;
     }
 
     // ==================== 복합키 클래스 ====================
@@ -117,7 +129,7 @@ public class OperatingDayEntity {
     @AllArgsConstructor
     @EqualsAndHashCode
     public static class OperatingDayId implements Serializable {
-        private String restaurantId;
+        private String restaurant;  // RestaurantEntity의 id 필드에 매핑
         private DayType dayType;
         private OperatingTimeType timeType;
     }

@@ -1,25 +1,28 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.Menu;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Menu JPA Entity
  * - BaseEntity 상속으로 ID와 createdAt 자동 관리
- * - 연관 관계는 ID로만 관리 (메시징 방식)
- * - 레스토랑 ID만 저장
+ * - Restaurant에 종속됨 (영속성 전이)
+ * - MenuOptionGroup과 MenuCategoryRelation을 영속성 전이로 관리
  */
 @Entity
 @Table(name = "p_menus", indexes = {
@@ -33,9 +36,11 @@ import java.time.LocalDateTime;
 @Builder
 public class MenuEntity extends BaseEntity {
 
-    // 소속 정보
-    @Column(name = "restaurant_id", length = 36, nullable = false)
-    private String restaurantId;
+    // 소속 정보 (Restaurant와의 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    @Setter
+    private RestaurantEntity restaurant;
 
     // 기본 정보
     @Column(name = "menu_name", length = 200, nullable = false)
@@ -109,6 +114,57 @@ public class MenuEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
+    // ==================== 연관 관계 (영속성 전이) ====================
+
+    /**
+     * Menu → MenuOptionGroup (OneToMany, 영속성 전이)
+     */
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuOptionGroupEntity> optionGroups = new ArrayList<>();
+
+    /**
+     * Menu ↔ MenuCategory (ManyToMany via MenuCategoryRelation)
+     * 양방향 전이: Menu와 Relation 모두에서 전이
+     */
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<MenuCategoryRelationEntity> categoryRelations = new HashSet<>();
+
+    // ==================== 연관관계 편의 메서드 ====================
+
+    /**
+     * 옵션 그룹 추가 (양방향 관계 설정)
+     */
+    public void addOptionGroup(MenuOptionGroupEntity optionGroup) {
+        optionGroups.add(optionGroup);
+        optionGroup.setMenu(this);
+    }
+
+    /**
+     * 옵션 그룹 제거
+     */
+    public void removeOptionGroup(MenuOptionGroupEntity optionGroup) {
+        optionGroups.remove(optionGroup);
+        optionGroup.setMenu(null);
+    }
+
+    /**
+     * 카테고리 관계 추가 (양방향 관계 설정)
+     */
+    public void addCategoryRelation(MenuCategoryRelationEntity relation) {
+        categoryRelations.add(relation);
+        relation.setMenu(this);
+    }
+
+    /**
+     * 카테고리 관계 제거
+     */
+    public void removeCategoryRelation(MenuCategoryRelationEntity relation) {
+        categoryRelations.remove(relation);
+        relation.setMenu(null);
+    }
+
     // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
@@ -120,7 +176,6 @@ public class MenuEntity extends BaseEntity {
         }
 
         MenuEntity entity = MenuEntity.builder()
-                .restaurantId(domain.getRestaurantId())
                 .menuName(domain.getMenuName())
                 .description(domain.getDescription())
                 .ingredients(domain.getIngredients())
@@ -150,18 +205,26 @@ public class MenuEntity extends BaseEntity {
             entity.setCreatedAtFromDomain(domain.getCreatedAt());
         }
 
+        // 하위 엔티티 변환 (영속성 전이)
+        domain.getOptionGroups().forEach(optionGroup ->
+                entity.addOptionGroup(MenuOptionGroupEntity.fromDomain(optionGroup))
+        );
+
+        domain.getCategoryRelations().forEach(relation ->
+                entity.addCategoryRelation(MenuCategoryRelationEntity.fromDomain(relation))
+        );
+
         return entity;
     }
 
     /**
      * 엔티티를 도메인 모델로 변환
-     * 주의: 연관 관계(카테고리, 옵션 그룹)는 포함되지 않음
      */
     public Menu toDomain() {
         return Menu.builder()
                 .id(this.getId())
                 .createdAt(this.getCreatedAt())
-                .restaurantId(this.restaurantId)
+                .restaurantId(this.restaurant != null ? this.restaurant.getId() : null)
                 .menuName(this.menuName)
                 .description(this.description)
                 .ingredients(this.ingredients)
@@ -181,6 +244,12 @@ public class MenuEntity extends BaseEntity {
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)
+                .optionGroups(this.optionGroups.stream()
+                        .map(MenuOptionGroupEntity::toDomain)
+                        .collect(Collectors.toList()))
+                .categoryRelations(this.categoryRelations.stream()
+                        .map(MenuCategoryRelationEntity::toDomain)
+                        .collect(Collectors.toSet()))
                 .build();
     }
 

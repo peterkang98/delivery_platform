@@ -1,19 +1,12 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
-import xyz.sparta_project.manjok.domain.restaurant.domain.model.Address;
-import xyz.sparta_project.manjok.domain.restaurant.domain.model.Coordinate;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.Restaurant;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantStatus;
 import xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity.vo.AddressVO;
@@ -22,16 +15,23 @@ import xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity.vo.Coor
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Restaurant JPA Entity
+ * Restaurant JPA Entity (Aggregate Root)
  * - BaseEntity를 상속받아 ID와 createdAt 자동 관리
- * - 연관 관계는 ID로만 관리 (메시징 방식)
- * - @OneToMany 사용 안 함
+ * - 모든 하위 엔티티를 영속성 전이로 관리
+ * - RestaurantCategory와는 ManyToMany 관계 (Relation 테이블)
  */
 @Entity
-@Table(name = "p_restaurants")
+@Table(name = "p_restaurants", indexes = {
+        @Index(name = "idx_restaurant_owner_id", columnList = "owner_id"),
+        @Index(name = "idx_restaurant_is_active", columnList = "is_active"),
+        @Index(name = "idx_restaurant_status", columnList = "status")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -65,9 +65,9 @@ public class RestaurantEntity extends BaseEntity {
     @Column(name = "contact_number", length = 20)
     private String contactNumber;
 
-    // 태그 (JSON 또는 별도 테이블로 관리)
+    // 태그 (JSON)
     @Column(name = "tags", columnDefinition = "TEXT")
-    private String tagsJson;  // JSON 문자열로 저장
+    private String tagsJson;
 
     // 상태
     @Column(name = "is_active", nullable = false)
@@ -115,6 +115,104 @@ public class RestaurantEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
+    // ==================== 연관 관계 (영속성 전이) ====================
+
+    /**
+     * Restaurant → Menu (OneToMany, 영속성 전이)
+     * orphanRemoval = true: 부모와의 관계가 끊어진 자식은 자동 삭제
+     */
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuEntity> menus = new ArrayList<>();
+
+    /**
+     * Restaurant → MenuCategory (OneToMany, 영속성 전이)
+     */
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuCategoryEntity> menuCategories = new ArrayList<>();
+
+    /**
+     * Restaurant → OperatingDay (OneToMany, 영속성 전이)
+     */
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<OperatingDayEntity> operatingDays = new HashSet<>();
+
+    /**
+     * Restaurant ↔ RestaurantCategory (ManyToMany via RestaurantCategoryRelation)
+     * 양방향 전이: Restaurant와 Relation 모두에서 전이
+     */
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<RestaurantCategoryRelationEntity> categoryRelations = new HashSet<>();
+
+    // ==================== 연관관계 편의 메서드 ====================
+
+    /**
+     * 메뉴 추가 (양방향 관계 설정)
+     */
+    public void addMenu(MenuEntity menu) {
+        menus.add(menu);
+        menu.setRestaurant(this);
+    }
+
+    /**
+     * 메뉴 제거
+     */
+    public void removeMenu(MenuEntity menu) {
+        menus.remove(menu);
+        menu.setRestaurant(null);
+    }
+
+    /**
+     * 메뉴 카테고리 추가 (양방향 관계 설정)
+     */
+    public void addMenuCategory(MenuCategoryEntity category) {
+        menuCategories.add(category);
+        category.setRestaurant(this);
+    }
+
+    /**
+     * 메뉴 카테고리 제거
+     */
+    public void removeMenuCategory(MenuCategoryEntity category) {
+        menuCategories.remove(category);
+        category.setRestaurant(null);
+    }
+
+    /**
+     * 운영 시간 추가 (양방향 관계 설정)
+     */
+    public void addOperatingDay(OperatingDayEntity operatingDay) {
+        operatingDays.add(operatingDay);
+        operatingDay.setRestaurant(this);
+    }
+
+    /**
+     * 운영 시간 제거
+     */
+    public void removeOperatingDay(OperatingDayEntity operatingDay) {
+        operatingDays.remove(operatingDay);
+        operatingDay.setRestaurant(null);
+    }
+
+    /**
+     * 레스토랑 카테고리 관계 추가 (양방향 관계 설정)
+     */
+    public void addCategoryRelation(RestaurantCategoryRelationEntity relation) {
+        categoryRelations.add(relation);
+        relation.setRestaurant(this);
+    }
+
+    /**
+     * 레스토랑 카테고리 관계 제거
+     */
+    public void removeCategoryRelation(RestaurantCategoryRelationEntity relation) {
+        categoryRelations.remove(relation);
+        relation.setRestaurant(null);
+    }
+
     // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
@@ -125,12 +223,15 @@ public class RestaurantEntity extends BaseEntity {
             return null;
         }
 
-        RestaurantEntityBuilder builder = RestaurantEntity.builder()
+        RestaurantEntity entity = RestaurantEntity.builder()
                 .ownerId(domain.getOwnerId())
                 .ownerName(domain.getOwnerName())
                 .restaurantName(domain.getRestaurantName())
                 .status(domain.getStatus())
+                .address(AddressVO.fromDomain(domain.getAddress()))
+                .coordinate(CoordinateVO.fromDomain(domain.getCoordinate()))
                 .contactNumber(domain.getContactNumber())
+                .tagsJson(convertTagsToJson(domain.getTags()))
                 .isActive(domain.getIsActive())
                 .viewCount(domain.getViewCount())
                 .wishlistCount(domain.getWishlistCount())
@@ -142,32 +243,33 @@ public class RestaurantEntity extends BaseEntity {
                 .updatedBy(domain.getUpdatedBy())
                 .isDeleted(domain.isDeleted())
                 .deletedAt(domain.getDeletedAt())
-                .deletedBy(domain.getDeletedBy());
+                .deletedBy(domain.getDeletedBy())
+                .build();
 
-        // Address VO 변환
-        if (domain.getAddress() != null) {
-            builder.address(AddressVO.fromDomain(domain.getAddress()));
-        }
-
-        // Coordinate VO 변환
-        if (domain.getCoordinate() != null) {
-            builder.coordinate(CoordinateVO.fromDomain(domain.getCoordinate()));
-        }
-
-        // Tags 변환 (List<String> -> JSON)
-        if (domain.getTags() != null && !domain.getTags().isEmpty()) {
-            builder.tagsJson(convertTagsToJson(domain.getTags()));
-        }
-
-        RestaurantEntity entity = builder.build();
-
-        // ID 설정 (업데이트의 경우)
+        // ID 설정
         if (domain.getId() != null) {
             entity.setIdFromDomain(domain.getId());
         }
         if (domain.getCreatedAt() != null) {
             entity.setCreatedAtFromDomain(domain.getCreatedAt());
         }
+
+        // 하위 엔티티 변환 (영속성 전이)
+        domain.getMenus().forEach(menu ->
+                entity.addMenu(MenuEntity.fromDomain(menu))
+        );
+
+        domain.getMenuCategories().forEach(category ->
+                entity.addMenuCategory(MenuCategoryEntity.fromDomain(category))
+        );
+
+        domain.getOperatingDays().forEach(operatingDay ->
+                entity.addOperatingDay(OperatingDayEntity.fromDomain(operatingDay))
+        );
+
+        domain.getCategoryRelations().forEach(relation ->
+                entity.addCategoryRelation(RestaurantCategoryRelationEntity.fromDomain(relation))
+        );
 
         return entity;
     }
@@ -176,14 +278,17 @@ public class RestaurantEntity extends BaseEntity {
      * 엔티티를 도메인 모델로 변환
      */
     public Restaurant toDomain() {
-        Restaurant.RestaurantBuilder builder = Restaurant.builder()
+        return Restaurant.builder()
                 .id(this.getId())
                 .createdAt(this.getCreatedAt())
                 .ownerId(this.ownerId)
                 .ownerName(this.ownerName)
                 .restaurantName(this.restaurantName)
                 .status(this.status)
+                .address(this.address != null ? this.address.toDomain() : null)
+                .coordinate(this.coordinate != null ? this.coordinate.toDomain() : null)
                 .contactNumber(this.contactNumber)
+                .tags(convertJsonToTags(this.tagsJson))
                 .isActive(this.isActive)
                 .viewCount(this.viewCount)
                 .wishlistCount(this.wishlistCount)
@@ -195,31 +300,24 @@ public class RestaurantEntity extends BaseEntity {
                 .updatedBy(this.updatedBy)
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
-                .deletedBy(this.deletedBy);
-
-        // Address VO 변환
-        if (this.address != null) {
-            builder.address(this.address.toDomain());
-        }
-
-        // Coordinate VO 변환
-        if (this.coordinate != null) {
-            builder.coordinate(this.coordinate.toDomain());
-        }
-
-        // Tags 변환 (JSON -> List<String>)
-        if (this.tagsJson != null && !this.tagsJson.isEmpty()) {
-            builder.tags(convertJsonToTags(this.tagsJson));
-        }
-
-        return builder.build();
+                .deletedBy(this.deletedBy)
+                .menus(this.menus.stream()
+                        .map(MenuEntity::toDomain)
+                        .collect(Collectors.toList()))
+                .menuCategories(this.menuCategories.stream()
+                        .map(MenuCategoryEntity::toDomain)
+                        .collect(Collectors.toList()))
+                .operatingDays(this.operatingDays.stream()
+                        .map(OperatingDayEntity::toDomain)
+                        .collect(Collectors.toSet()))
+                .categoryRelations(this.categoryRelations.stream()
+                        .map(RestaurantCategoryRelationEntity::toDomain)
+                        .collect(Collectors.toSet()))
+                .build();
     }
 
     // ==================== Helper Methods ====================
 
-    /**
-     * ID 설정 (도메인에서 가져올 때만 사용)
-     */
     private void setIdFromDomain(String id) {
         try {
             java.lang.reflect.Field field = BaseEntity.class.getDeclaredField("id");
@@ -230,9 +328,6 @@ public class RestaurantEntity extends BaseEntity {
         }
     }
 
-    /**
-     * CreatedAt 설정 (도메인에서 가져올 때만 사용)
-     */
     private void setCreatedAtFromDomain(LocalDateTime createdAt) {
         try {
             java.lang.reflect.Field field = BaseEntity.class.getDeclaredField("createdAt");
@@ -243,25 +338,17 @@ public class RestaurantEntity extends BaseEntity {
         }
     }
 
-    /**
-     * Tags를 JSON 문자열로 변환
-     */
     private static String convertTagsToJson(List<String> tags) {
         if (tags == null || tags.isEmpty()) {
             return null;
         }
-        // 간단한 JSON 배열 형태로 변환 (실제로는 Jackson 사용 권장)
         return "[\"" + String.join("\",\"", tags) + "\"]";
     }
 
-    /**
-     * JSON 문자열을 Tags 리스트로 변환
-     */
     private static List<String> convertJsonToTags(String json) {
         if (json == null || json.isEmpty() || json.equals("[]")) {
             return new ArrayList<>();
         }
-        // 간단한 파싱 (실제로는 Jackson 사용 권장)
         json = json.replaceAll("[\\[\\]\"]", "");
         return List.of(json.split(","));
     }

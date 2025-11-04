@@ -1,24 +1,25 @@
 package xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.MenuOptionGroup;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MenuOptionGroup JPA Entity
- * - 메뉴의 옵션 그룹 (사이즈 선택, 맵기 선택 등)
  * - BaseEntity 상속으로 ID와 createdAt 자동 관리
- * - 메뉴 ID로만 연관 관계 관리
+ * - Menu에 종속됨 (영속성 전이)
+ * - MenuOption을 영속성 전이로 관리
  */
 @Entity
 @Table(name = "p_menu_option_groups", indexes = {
@@ -31,9 +32,11 @@ import java.time.LocalDateTime;
 @Builder
 public class MenuOptionGroupEntity extends BaseEntity {
 
-    // 소속 정보
-    @Column(name = "menu_id", length = 36, nullable = false)
-    private String menuId;
+    // 소속 정보 (Menu와의 관계)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "menu_id", nullable = false)
+    @Setter
+    private MenuEntity menu;
 
     @Column(name = "restaurant_id", length = 36, nullable = false)
     private String restaurantId;
@@ -87,6 +90,33 @@ public class MenuOptionGroupEntity extends BaseEntity {
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
 
+    // ==================== 연관 관계 (영속성 전이) ====================
+
+    /**
+     * MenuOptionGroup → MenuOption (OneToMany, 영속성 전이)
+     */
+    @OneToMany(mappedBy = "optionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<MenuOptionEntity> options = new ArrayList<>();
+
+    // ==================== 연관관계 편의 메서드 ====================
+
+    /**
+     * 옵션 추가 (양방향 관계 설정)
+     */
+    public void addOption(MenuOptionEntity option) {
+        options.add(option);
+        option.setOptionGroup(this);
+    }
+
+    /**
+     * 옵션 제거
+     */
+    public void removeOption(MenuOptionEntity option) {
+        options.remove(option);
+        option.setOptionGroup(null);
+    }
+
     // ==================== 도메인 ↔ 엔티티 변환 ====================
 
     /**
@@ -98,7 +128,6 @@ public class MenuOptionGroupEntity extends BaseEntity {
         }
 
         MenuOptionGroupEntity entity = MenuOptionGroupEntity.builder()
-                .menuId(domain.getMenuId())
                 .restaurantId(domain.getRestaurantId())
                 .groupName(domain.getGroupName())
                 .description(domain.getDescription())
@@ -123,18 +152,22 @@ public class MenuOptionGroupEntity extends BaseEntity {
             entity.setCreatedAtFromDomain(domain.getCreatedAt());
         }
 
+        // 하위 엔티티 변환 (영속성 전이)
+        domain.getOptions().forEach(option ->
+                entity.addOption(MenuOptionEntity.fromDomain(option))
+        );
+
         return entity;
     }
 
     /**
      * 엔티티를 도메인 모델로 변환
-     * 주의: 하위 옵션들은 포함되지 않음
      */
     public MenuOptionGroup toDomain() {
         return MenuOptionGroup.builder()
                 .id(this.getId())
                 .createdAt(this.getCreatedAt())
-                .menuId(this.menuId)
+                .menuId(this.menu != null ? this.menu.getId() : null)
                 .restaurantId(this.restaurantId)
                 .groupName(this.groupName)
                 .description(this.description)
@@ -149,6 +182,9 @@ public class MenuOptionGroupEntity extends BaseEntity {
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)
+                .options(this.options.stream()
+                        .map(MenuOptionEntity::toDomain)
+                        .collect(Collectors.toList()))
                 .build();
     }
 
