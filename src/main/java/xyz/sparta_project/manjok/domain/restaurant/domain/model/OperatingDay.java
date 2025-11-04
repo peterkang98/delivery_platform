@@ -96,7 +96,8 @@ public class OperatingDay {
         }
 
         // 일반적인 경우: 시작 시간과 종료 시간 사이
-        return !time.isBefore(startTime) && !time.isAfter(endTime);
+        return (time.equals(startTime) || time.isAfter(startTime)) &&
+                (time.equals(endTime) || time.isBefore(endTime));
     }
 
     /**
