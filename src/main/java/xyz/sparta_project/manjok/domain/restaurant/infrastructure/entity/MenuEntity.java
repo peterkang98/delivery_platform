@@ -121,7 +121,7 @@ public class MenuEntity extends BaseEntity {
      */
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<MenuOptionGroupEntity> optionGroups = new ArrayList<>();
+    private Set<MenuOptionGroupEntity> optionGroups = new HashSet<>();
 
     /**
      * Menu ↔ MenuCategory (ManyToMany via MenuCategoryRelation)

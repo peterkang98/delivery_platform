@@ -316,6 +316,16 @@ public class RestaurantEntity extends BaseEntity {
                 .build();
     }
 
+    /**
+     * 논리적 삭제 처리 (연관관계 유지)
+     */
+    public void markAsDeleted(String deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
+
+
     // ==================== Helper Methods ====================
 
     private void setIdFromDomain(String id) {

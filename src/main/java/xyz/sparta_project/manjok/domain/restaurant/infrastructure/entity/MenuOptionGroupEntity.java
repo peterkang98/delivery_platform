@@ -12,7 +12,9 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.model.MenuOptionGroup;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -97,7 +99,7 @@ public class MenuOptionGroupEntity extends BaseEntity {
      */
     @OneToMany(mappedBy = "optionGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<MenuOptionEntity> options = new ArrayList<>();
+    private Set<MenuOptionEntity> options = new HashSet<>();
 
     // ==================== 연관관계 편의 메서드 ====================
 
