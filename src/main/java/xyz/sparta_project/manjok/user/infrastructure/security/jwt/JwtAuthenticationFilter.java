@@ -38,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			// 토큰 유효성 검사 및 인증 처리
 			if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+				// 토큰이 유효하다면 DB 조회로 권한 확인
 				UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.getId(token));
 				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

@@ -39,6 +39,9 @@ public class SecurityConfig {
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 				.authorizeHttpRequests(auth -> {
 					auth.requestMatchers("/v1/auth/**", "/h2-console/**").permitAll();
+					auth.requestMatchers("/v1/customers/**").hasRole("CUSTOMER");
+					auth.requestMatchers("/v1/owners/**").hasRole("OWNER");
+					auth.requestMatchers("/v1/admin/**").hasAnyRole("MASTER", "MANAGER");
 					auth.anyRequest().authenticated();
 				})
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
