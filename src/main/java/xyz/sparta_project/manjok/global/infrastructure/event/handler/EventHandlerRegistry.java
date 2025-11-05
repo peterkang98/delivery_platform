@@ -2,6 +2,7 @@ package xyz.sparta_project.manjok.global.infrastructure.event.handler;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import xyz.sparta_project.manjok.global.infrastructure.event.exception.EventErrorCode;
@@ -39,7 +40,14 @@ public class EventHandlerRegistry {
 
         for (Map.Entry<String, Object> entry : eventHandlers.entrySet()) {
             Object handler = entry.getValue();
-            EventHandler annotation = handler.getClass().getAnnotation(EventHandler.class);
+
+            Class<?> targetClass = AopUtils.getTargetClass(handler);
+
+            EventHandler annotation = targetClass.getAnnotation(EventHandler.class);
+            if (annotation == null) {
+                log.warn("핸들러 {} 에서 @EventHandler 어노테이션을 찾을 수 없습니다 (프록시 가능성)", targetClass.getName());
+                continue;
+            }
 
             if (handler instanceof EventHandlerProcessor) {
                 Class<?> eventType = annotation.eventType();
