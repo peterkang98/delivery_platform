@@ -189,6 +189,54 @@ public class RestaurantCategoryEntity extends BaseEntity {
     }
 
     /**
+     * 기존 엔티티를 도메인 정보로 업데이트
+     * - JPA 더티체킹을 위한 메서드
+     * - ID, createdAt, createdBy는 변경하지 않음
+     */
+    public void updateFromDomain(RestaurantCategory domain) {
+        if (domain == null) {
+            return;
+        }
+
+        // 기본 정보
+        this.categoryCode = domain.getCategoryCode();
+        this.categoryName = domain.getCategoryName();
+        this.description = domain.getDescription();
+        this.iconUrl = domain.getIconUrl();
+        this.colorCode = domain.getColorCode();
+
+        // 계층 구조
+        this.parentCategoryId = domain.getParentCategoryId();
+        this.depth = domain.getDepth();
+
+        // 운영 정보
+        this.displayOrder = domain.getDisplayOrder();
+        this.isActive = domain.getIsActive();
+        this.isPopular = domain.getIsPopular();
+        this.isNew = domain.getIsNew();
+
+        // 정책 정보
+        this.defaultMinimumOrderAmount = domain.getDefaultMinimumOrderAmount();
+        this.averageDeliveryTime = domain.getAverageDeliveryTime();
+        this.platformCommissionRate = domain.getPlatformCommissionRate();
+
+        // 통계 정보
+        this.activeRestaurantCount = domain.getActiveRestaurantCount();
+        this.totalOrderCount = domain.getTotalOrderCount();
+
+        // 감사 정보 (수정 관련만)
+        this.updatedAt = domain.getUpdatedAt();
+        this.updatedBy = domain.getUpdatedBy();
+
+        // 삭제 정보
+        this.isDeleted = domain.getIsDeleted();
+        this.deletedAt = domain.getDeletedAt();
+        this.deletedBy = domain.getDeletedBy();
+
+        // 관계는 별도로 관리 (필요시 추가 메서드 구현)
+    }
+
+    /**
      * 엔티티를 도메인 모델로 변환
      */
     public RestaurantCategory toDomain() {

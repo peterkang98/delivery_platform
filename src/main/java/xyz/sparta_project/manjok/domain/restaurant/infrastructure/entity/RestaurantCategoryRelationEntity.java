@@ -55,6 +55,12 @@ public class RestaurantCategoryRelationEntity {
     @Column(name = "created_by", length = 100)
     private String createdBy;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "updated_by", length = 100)
+    private String updatedBy;
+
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     private Boolean isDeleted = false;
@@ -79,6 +85,8 @@ public class RestaurantCategoryRelationEntity {
                 .isPrimary(domain.isPrimary())
                 .createdAt(domain.getCreatedAt())
                 .createdBy(domain.getCreatedBy())
+                .updatedAt(domain.getUpdatedAt())
+                .updatedBy(domain.getUpdatedBy())
                 .isDeleted(domain.isDeleted())
                 .deletedAt(domain.getDeletedAt())
                 .deletedBy(domain.getDeletedBy())
@@ -95,6 +103,8 @@ public class RestaurantCategoryRelationEntity {
                 .isPrimary(this.isPrimary)
                 .createdAt(this.createdAt)
                 .createdBy(this.createdBy)
+                .updatedAt(this.updatedAt)
+                .updatedBy(this.updatedBy)
                 .isDeleted(this.isDeleted)
                 .deletedAt(this.deletedAt)
                 .deletedBy(this.deletedBy)

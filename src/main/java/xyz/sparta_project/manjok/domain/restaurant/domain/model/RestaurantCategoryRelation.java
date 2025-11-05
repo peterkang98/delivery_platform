@@ -23,8 +23,12 @@ public class RestaurantCategoryRelation {
     private String restaurantId;
     private String categoryId;
     private boolean isPrimary;
+
     private LocalDateTime createdAt;
     private String createdBy;
+
+    private LocalDateTime updatedAt;
+    private String updatedBy;
 
     @Builder.Default
     private boolean isDeleted = false;
@@ -34,12 +38,15 @@ public class RestaurantCategoryRelation {
 
     public static RestaurantCategoryRelation create(String restaurantId, String categoryId,
                                                     boolean isPrimary, String createdBy) {
+        LocalDateTime now = LocalDateTime.now();
         return RestaurantCategoryRelation.builder()
                 .restaurantId(restaurantId)
                 .categoryId(categoryId)
                 .isPrimary(isPrimary)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
                 .createdBy(createdBy)
+                .updatedAt(now)
+                .updatedBy(createdBy)
                 .isDeleted(false)
                 .build();
     }
@@ -48,9 +55,34 @@ public class RestaurantCategoryRelation {
      * 관계 삭제 (soft delete)
      */
     public void delete(String deletedBy) {
+        LocalDateTime now = LocalDateTime.now();
         this.isDeleted = true;
-        this.deletedAt = LocalDateTime.now();
+        this.deletedAt = now;
         this.deletedBy = deletedBy;
+        this.updatedAt = now;
+        this.updatedBy = deletedBy;
+    }
+
+    /**
+     * 관계 복구
+     */
+    public void restore(String updatedBy) {
+        LocalDateTime now = LocalDateTime.now();
+        this.isDeleted = false;
+        this.deletedAt = null;
+        this.deletedBy = null;
+        this.updatedAt = now;
+        this.updatedBy = updatedBy;
+    }
+
+    /**
+     * Primary 여부 변경
+     */
+    public void updatePrimary(boolean isPrimary, String updatedBy) {
+        LocalDateTime now = LocalDateTime.now();
+        this.isPrimary = isPrimary;
+        this.updatedAt = now;
+        this.updatedBy = updatedBy;
     }
 
     /**
