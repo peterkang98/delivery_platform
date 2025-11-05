@@ -9,6 +9,7 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantC
 import xyz.sparta_project.manjok.domain.restaurant.infrastructure.entity.RestaurantCategoryEntity;
 import xyz.sparta_project.manjok.domain.restaurant.infrastructure.jpa.RestaurantCategoryJpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,11 +30,34 @@ public class RestaurantCategoryRepositoryImpl implements RestaurantCategoryRepos
     private final RestaurantCategoryJpaRepository jpaRepository;
     private final JPAQueryFactory queryFactory;
 
+    /**
+     * 카테고리 저장
+     * - ID가 있으면: 기존 엔티티 조회 후 업데이트
+     * - ID가 없으면: 새로 생성
+     */
     @Override
     @Transactional
     public RestaurantCategory save(RestaurantCategory category) {
-        RestaurantCategoryEntity entity = RestaurantCategoryEntity.fromDomain(category);
-        RestaurantCategoryEntity saved = jpaRepository.save(entity);
+        RestaurantCategoryEntity entityToSave;
+
+        if (category.getId() != null) {
+            // ID가 있는 경우: 기존 엔티티 조회 후 업데이트
+            Optional<RestaurantCategoryEntity> existingEntity = jpaRepository.findById(category.getId());
+
+            if (existingEntity.isPresent()) {
+                // 기존 엔티티를 도메인 정보로 업데이트
+                entityToSave = existingEntity.get();
+                entityToSave.updateFromDomain(category);
+            } else {
+                // ID는 있지만 DB에 없는 경우: 새로 생성
+                entityToSave = RestaurantCategoryEntity.fromDomain(category);
+            }
+        } else {
+            // ID가 없는 경우: 새로 생성
+            entityToSave = RestaurantCategoryEntity.fromDomain(category);
+        }
+
+        RestaurantCategoryEntity saved = jpaRepository.save(entityToSave);
         return saved.toDomain();
     }
 
@@ -49,6 +73,28 @@ public class RestaurantCategoryRepositoryImpl implements RestaurantCategoryRepos
 
         return Optional.ofNullable(entity)
                 .map(RestaurantCategoryEntity::toDomain);
+    }
+
+    /**
+     * 여러 ID로 카테고리 일괄 조회
+     * - N+1 문제 방지
+     */
+    @Override
+    public List<RestaurantCategory> findAllByIds(Collection<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        return queryFactory
+                .selectFrom(restaurantCategoryEntity)
+                .where(
+                        restaurantCategoryEntity.id.in(ids),
+                        restaurantCategoryEntity.isDeleted.isFalse()
+                )
+                .fetch()
+                .stream()
+                .map(RestaurantCategoryEntity::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
