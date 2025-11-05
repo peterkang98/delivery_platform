@@ -949,8 +949,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                     .from(menuEntity)
                     .where(
                             menuEntity.restaurant.id.eq(restaurantId),
-                            menuEntity.id.eq(menuId),
-                            menuEntity.isDeleted.eq(false)
+                            menuEntity.id.eq(menuId)
                     )
                     .fetchFirst();
 
