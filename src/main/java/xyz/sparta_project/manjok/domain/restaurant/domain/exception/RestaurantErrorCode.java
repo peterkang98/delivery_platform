@@ -24,6 +24,9 @@ public enum RestaurantErrorCode implements ErrorCode {
     RESTAURANT_NOT_FOUND("RESTAURANT_013", "레스토랑을 찾을 수 없습니다.", 404),
     RESTAURANT_ALREADY_DELETED("RESTAURANT_014", "이미 삭제된 레스토랑입니다.", 400),
     CANNOT_MODIFY_MENU_WHILE_OPEN("RESTAURANT_015", "영업 중에는 메뉴를 수정할 수 없습니다.", 400),
+    DUPLICATE_RESTAURANT_NAME("RESTAURANT_016", "동일한 이름의 레스토랑이 이미 존재합니다.", 400),
+    NOT_RESTAURANT_OWNER("RESTAURANT_017", "해당 레스토랑의 소유자가 아닙니다.", 403),
+    ADDRESS_REQUIRED("RESTAURANT_018", "주소는 필수입니다.", 400),
 
     // OperatingDay 관련 에러 (RESTAURANT_030~039)
     OPERATING_DAY_NOT_FOUND("RESTAURANT_030", "운영시간 정보를 찾을 수 없습니다.", 404),
@@ -43,6 +46,7 @@ public enum RestaurantErrorCode implements ErrorCode {
     // Relation 관련 에러 (RESTAURANT_060~069)
     RELATION_NOT_FOUND("RESTAURANT_060", "관계 정보를 찾을 수 없습니다.", 404),
     RELATION_NOT_BELONG_TO_RESTAURANT("RESTAURANT_061", "해당 관계는 이 레스토랑에 속하지 않습니다.", 403);
+
 
     private final String code;
     private final String message;

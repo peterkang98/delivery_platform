@@ -18,6 +18,7 @@ public enum MenuErrorCode implements ErrorCode {
     MENU_NOT_FOUND("MENU_004", "메뉴를 찾을 수 없습니다.", 404),
     MENU_ALREADY_DELETED("MENU_005", "이미 삭제된 메뉴입니다.", 400),
     MENU_NOT_BELONG_TO_RESTAURANT("MENU_006", "해당 메뉴는 이 레스토랑에 속하지 않습니다.", 403),
+    MENU_NOT_AVAILABLE("MENU_007", "현재 주문 가능한 메뉴가 아닙니다.", 400),
 
     // MenuCategory 관련 에러 (MENU_020~039)
     CATEGORY_NAME_REQUIRED("MENU_020", "카테고리명은 필수입니다.", 400),
@@ -31,6 +32,7 @@ public enum MenuErrorCode implements ErrorCode {
     INVALID_MAX_SELECTION("MENU_041", "최대 선택 가능 수는 최소 선택 수보다 작을 수 없습니다.", 400),
     OPTION_GROUP_NOT_FOUND("MENU_042", "옵션 그룹을 찾을 수 없습니다.", 404),
     OPTION_GROUP_NOT_BELONG_TO_RESTAURANT("MENU_043", "해당 옵션 그룹은 이 레스토랑에 속하지 않습니다.", 403),
+    INVALID_MIN_SELECTION("MENU_044", "최소 선택 개수가 유효하지 않습니다.", 400),
 
     // MenuOption 관련 에러 (MENU_060~079)
     OPTION_NAME_REQUIRED("MENU_060", "옵션명은 필수입니다.", 400),
