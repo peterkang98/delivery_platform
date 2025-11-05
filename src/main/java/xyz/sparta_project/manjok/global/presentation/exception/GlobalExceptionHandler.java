@@ -4,11 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import xyz.sparta_project.manjok.global.presentation.dto.ErrorResponse;
+import xyz.sparta_project.manjok.user.infrastructure.security.exception.AuthErrorCode;
 
 /**
  * 전역 예외 처리기
@@ -94,6 +97,47 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
+	/**
+	 * 스프링 시큐리티 예외처리
+	 * */
+	@ExceptionHandler({
+			LockedException.class,
+			DisabledException.class,
+			AccountExpiredException.class,
+			CredentialsExpiredException.class,
+			BadCredentialsException.class
+	})
+	public ResponseEntity<ErrorResponse> handleAuthenticationException(HttpServletRequest request, AuthenticationException e) {
+
+		log.error("인증 예외 발생: {}", e.getMessage());
+
+		ErrorCode errorCode = determineErrorCode(e);
+
+		ErrorResponse errorResponse = ErrorResponse.of(
+				errorCode,
+				request.getRequestURI()
+		);
+
+		return ResponseEntity
+				.status(errorCode.getStatus())
+				.body(errorResponse);
+	}
+
+	private ErrorCode determineErrorCode(AuthenticationException e) {
+		if (e instanceof LockedException) {
+			return AuthErrorCode.ACCOUNT_LOCKED;
+		} else if (e instanceof DisabledException) {
+			return AuthErrorCode.ACCOUNT_DISABLED;
+		} else if (e instanceof AccountExpiredException) {
+			return AuthErrorCode.ACCOUNT_EXPIRED;
+		} else if (e instanceof CredentialsExpiredException) {
+			return AuthErrorCode.CREDENTIALS_EXPIRED;
+		} else if (e instanceof BadCredentialsException) {
+			return AuthErrorCode.INVALID_CREDENTIALS;
+		}
+		return AuthErrorCode.AUTHENTICATION_FAILED;
+	}
+
     /**
      * 기타 모든 예외 처리
      * */
@@ -116,5 +160,4 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
 
     }
-
 }

@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.user.domain.vo.Role;
 
@@ -37,8 +38,9 @@ public class User extends BaseEntity {
 	private Boolean isVerified = false;
 
 	@Column(name = "is_public", nullable = false)
-	private Boolean isPublic = true;
+	private Boolean isPublic = false;
 
+	@LastModifiedDate
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
@@ -67,13 +69,11 @@ public class User extends BaseEntity {
 
 	public void updatePassword(String newPassword) {
 		this.password = newPassword;
-		this.updatedAt = LocalDateTime.now();
 	}
 
 	public void updateRole(Role newRole, String updatedBy) {
 		this.role = newRole;
 		this.updatedBy = updatedBy;
-		this.updatedAt = LocalDateTime.now();
 	}
 
 	public void softDelete(String deletedBy) {

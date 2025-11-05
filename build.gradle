@@ -41,6 +41,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // 이메일 검증
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // OAuth2 클라이언트 기능 (소셜 로그인 등 외부 인증 서버 연동 시 사용)
 //    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 

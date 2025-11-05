@@ -11,6 +11,7 @@ import xyz.sparta_project.manjok.user.domain.vo.TokenType;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "p_verification_token")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class VerificationToken extends BaseEntity {

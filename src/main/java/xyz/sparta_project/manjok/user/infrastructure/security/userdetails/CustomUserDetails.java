@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.global.infrastructure.security.userdetails;
+package xyz.sparta_project.manjok.user.infrastructure.security.userdetails;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return user.getEmail();
+		return user.getId();
 	}
 
 	@Override

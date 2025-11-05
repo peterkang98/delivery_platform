@@ -31,9 +31,7 @@ spring:
           starttls:
             enable: true
             required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+        debug: true
 
 logging:
   level:
@@ -46,4 +44,7 @@ jwt:
   refresh-token-exp: 604800000  # 7일
 
 backend:
-  base-url: ${BASE_URL:localhost}
+  base-url: ${BASE_URL:http://localhost:8080}
+
+frontend:
+  base-url: ${BASE_URL:http://localhost:3000}

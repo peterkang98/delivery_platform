@@ -43,3 +43,6 @@ out/
 #### QueryDSL ###
 /build/generated/
 generated/
+
+### redis ###
+docker-compose.yml

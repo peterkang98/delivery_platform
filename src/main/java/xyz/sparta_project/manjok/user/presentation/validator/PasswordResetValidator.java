@@ -2,14 +2,14 @@ package xyz.sparta_project.manjok.user.presentation.validator;
 
 import org.springframework.stereotype.Component;
 import xyz.sparta_project.manjok.user.exception.UserException;
-import xyz.sparta_project.manjok.user.presentation.dto.PasswordResetRequest;
+import xyz.sparta_project.manjok.user.presentation.dto.ConfirmPasswordResetRequest;
 
 import static xyz.sparta_project.manjok.user.exception.UserErrorCode.INVALID_SIGNUP_CONFIRM_PASSWORD;
 import static xyz.sparta_project.manjok.user.exception.UserErrorCode.INVALID_SIGNUP_PASSWORD;
 
 @Component
 public class PasswordResetValidator implements PasswordValidator{
-	public void validate(PasswordResetRequest request) {
+	public void validate(ConfirmPasswordResetRequest request) {
 		String password = request.newPassword();
 		String confirmPassword = request.confirmPassword();
 
