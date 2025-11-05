@@ -30,6 +30,9 @@ public class MenuCategoryRelation {
     private LocalDateTime createdAt;
     private String createdBy;
 
+    private LocalDateTime updatedAt;
+    private String updatedBy;
+
     @Builder.Default
     private boolean isDeleted = false;
     private LocalDateTime deletedAt;
@@ -41,13 +44,16 @@ public class MenuCategoryRelation {
     public static MenuCategoryRelation create(String menuId, String categoryId,
                                               String restaurantId, boolean isPrimary,
                                               String createdBy) {
+        LocalDateTime now = LocalDateTime.now();
         return MenuCategoryRelation.builder()
                 .menuId(menuId)
                 .categoryId(categoryId)
                 .restaurantId(restaurantId)
                 .isPrimary(isPrimary)
-                .createdAt(LocalDateTime.now())
+                .createdAt(now)
                 .createdBy(createdBy)
+                .updatedAt(now)
+                .updatedBy(createdBy)
                 .isDeleted(false)
                 .build();
     }
@@ -59,6 +65,22 @@ public class MenuCategoryRelation {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = deletedBy;
+    }
+
+    /**
+     * 관계 복구
+     * - Soft delete된 관계를 재활성화
+     * - 카테고리 변경 시 기존 관계 재활용
+     */
+    public void restore(boolean isPrimary, String updatedBy) {
+        this.isDeleted = false;
+        this.deletedAt = null;
+        this.deletedBy = null;
+        this.isPrimary = isPrimary;
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = updatedBy;
     }
 
     /**
@@ -73,5 +95,15 @@ public class MenuCategoryRelation {
      */
     public void setPrimary(boolean primary) {
         this.isPrimary = primary;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 주 카테고리로 설정 (updatedBy 포함)
+     */
+    public void setPrimary(boolean primary, String updatedBy) {
+        this.isPrimary = primary;
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = updatedBy;
     }
 }

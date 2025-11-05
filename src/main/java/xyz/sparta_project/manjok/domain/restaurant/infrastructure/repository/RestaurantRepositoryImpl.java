@@ -93,23 +93,24 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             String menuId = menuEntity.getId();
 
             // 2-1. MenuCategoryRelation
-            for (MenuCategoryRelationEntity relation : menuEntity.getCategoryRelations()) {
-                setRestaurantId(relation, "restaurantId", restaurantId);
-
-                // Category 참조 설정
-                restaurant.getMenus().stream()
-                        .filter(menu -> menu.getId().equals(menuId))
-                        .findFirst()
-                        .flatMap(domainMenu -> domainMenu.getCategoryRelations().stream()
-                                .filter(dr -> relation.getIsPrimary().equals(dr.isPrimary()))
-                                .findFirst())
-                        .ifPresent(domainRelation -> {
-                            entity.getMenuCategories().stream()
-                                    .filter(cat -> cat.getId().equals(domainRelation.getCategoryId()))
-                                    .findFirst()
-                                    .ifPresent(relation::setCategory);
-                        });
-            }
+//            for (MenuCategoryRelationEntity relation : menuEntity.getCategoryRelations()) {
+//                setRestaurantId(relation, "restaurantId", restaurantId);
+//
+//                // Category 참조 설정
+//                restaurant.getMenus().stream()
+//                        .filter(menu -> menu.getId().equals(menuId))
+//                        .findFirst()
+//                        .flatMap(domainMenu -> domainMenu.getCategoryRelations().stream()
+//                                .filter(dr -> relation.getIsPrimary().equals(dr.isPrimary()))
+//                                .findFirst())
+//                        .ifPresent(domainRelation -> {
+//                            entity.getMenuCategories().stream()
+//                                    .filter(cat -> cat.getId().equals(domainRelation.getCategoryId()))
+//                                    .findFirst()
+//                                    .ifPresent(relation::setCategory);
+//                        });
+//            }
+            resolveMenuCategoryRelations(menuEntity, restaurant, menuId, restaurantId, entity);
 
             // 2-2. MenuOptionGroup
             for (MenuOptionGroupEntity optionGroup : menuEntity.getOptionGroups()) {
@@ -121,6 +122,127 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                     setRestaurantId(option, "menuId", menuId);
                 }
             }
+        }
+    }
+
+    /**
+     * MenuCategoryRelation 연관관계 처리 (중복 방지)
+     * - 복합키(menuId + categoryId) 기반으로 기존 엔티티 찾아서 재활용
+     * - 새로운 엔티티는 추가, 기존 엔티티는 업데이트
+     */
+    private void resolveMenuCategoryRelations(MenuEntity menuEntity, Restaurant restaurant,
+                                              String menuId, String restaurantId,
+                                              RestaurantEntity restaurantEntity) {
+        // 1. 현재 Menu의 도메인 모델 찾기
+        Menu domainMenu = restaurant.getMenus().stream()
+                .filter(menu -> menu.getId().equals(menuId))
+                .findFirst()
+                .orElse(null);
+
+        if (domainMenu == null) {
+            return;
+        }
+
+        // 2. 엔티티의 기존 관계들을 Map으로 변환 (categoryId를 키로)
+        Map<String, MenuCategoryRelationEntity> existingRelationMap = menuEntity.getCategoryRelations().stream()
+                .filter(rel -> rel.getCategoryId() != null) // category가 설정된 것만
+                .collect(Collectors.toMap(
+                        MenuCategoryRelationEntity::getCategoryId,
+                        rel -> rel,
+                        (existing, replacement) -> existing // 중복 시 기존 것 유지
+                ));
+
+        // 3. 새로운 관계 Set (중복 제거용)
+        Set<MenuCategoryRelationEntity> newRelations = new HashSet<>();
+
+        // 4. 도메인 모델의 각 관계 처리
+        for (MenuCategoryRelation domainRelation : domainMenu.getCategoryRelations()) {
+            String categoryId = domainRelation.getCategoryId();
+
+            // 기존 엔티티가 있는지 확인
+            MenuCategoryRelationEntity existingEntity = existingRelationMap.get(categoryId);
+
+            if (existingEntity != null) {
+                // 기존 엔티티 재활용 - 필드만 업데이트
+                updateMenuCategoryRelationFields(existingEntity, domainRelation);
+
+                // Category 참조 설정 (아직 없으면)
+                if (existingEntity.getCategory() == null) {
+                    setMenuCategoryReference(existingEntity, categoryId, restaurantEntity);
+                }
+
+                newRelations.add(existingEntity);
+            } else {
+                // 새로운 엔티티 생성
+                MenuCategoryRelationEntity newEntity = MenuCategoryRelationEntity.fromDomain(domainRelation);
+
+                // 연관관계 설정
+                setRestaurantId(newEntity, "restaurantId", restaurantId);
+                newEntity.setMenu(menuEntity);
+                setMenuCategoryReference(newEntity, categoryId, restaurantEntity);
+
+                newRelations.add(newEntity);
+            }
+        }
+
+        // 5. 컬렉션 교체 (기존 것 clear 후 새로운 것 추가)
+        menuEntity.getCategoryRelations().clear();
+        menuEntity.getCategoryRelations().addAll(newRelations);
+    }
+
+    /**
+     * 기존 MenuCategoryRelationEntity의 필드 업데이트
+     * - 연관관계(menu, category)는 유지하고 데이터 필드만 업데이트
+     */
+    private void updateMenuCategoryRelationFields(MenuCategoryRelationEntity entity,
+                                                  MenuCategoryRelation domain) {
+        try {
+            // restaurantId 업데이트 (필요시)
+            if (entity.getRestaurantId() == null ||
+                    !entity.getRestaurantId().equals(domain.getRestaurantId())) {
+                setRestaurantId(entity, "restaurantId", domain.getRestaurantId());
+            }
+
+            // 데이터 필드 업데이트 (Reflection 사용)
+            setField(entity, "isPrimary", domain.isPrimary());
+            setField(entity, "isDeleted", domain.isDeleted());
+            setField(entity, "deletedAt", domain.getDeletedAt());
+            setField(entity, "deletedBy", domain.getDeletedBy());
+
+            // 업데이트 추적 필드
+            setField(entity, "updatedAt", domain.getUpdatedAt());
+            setField(entity, "updatedBy", domain.getUpdatedBy());
+
+            // createdAt, createdBy는 변경하지 않음 (최초 생성 정보 유지)
+
+        } catch (Exception e) {
+            log.error("Failed to update MenuCategoryRelationEntity fields", e);
+            throw new RuntimeException("Failed to update MenuCategoryRelationEntity fields", e);
+        }
+    }
+
+    /**
+     * MenuCategory 참조 설정
+     */
+    private void setMenuCategoryReference(MenuCategoryRelationEntity relation,
+                                          String categoryId,
+                                          RestaurantEntity restaurantEntity) {
+        restaurantEntity.getMenuCategories().stream()
+                .filter(cat -> cat.getId().equals(categoryId))
+                .findFirst()
+                .ifPresent(relation::setCategory);
+    }
+
+    /**
+     * 리플렉션을 사용한 필드 설정 (private 필드 접근)
+     */
+    private void setField(Object target, String fieldName, Object value) {
+        try {
+            java.lang.reflect.Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to set field: " + fieldName, e);
         }
     }
 
@@ -140,25 +262,67 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     /**
      * RestaurantCategoryRelation의 Category 참조 설정
      */
+//    private void resolveRestaurantCategoryRelations(RestaurantEntity entity, Restaurant restaurant) {
+//        for (RestaurantCategoryRelationEntity relationEntity : entity.getCategoryRelations()) {
+//            // 도메인에서 매칭되는 categoryId 찾기
+//            restaurant.getCategoryRelations().stream()
+//                    .filter(domainRelation ->
+//                            relationEntity.getIsPrimary().equals(domainRelation.isPrimary()))
+//                    .findFirst()
+//                    .ifPresent(domainRelation -> {
+//                        String categoryId = domainRelation.getCategoryId();
+//                        if (categoryId != null) {
+//                            RestaurantCategoryEntity categoryEntity =
+//                                    restaurantCategoryJpaRepository.findById(categoryId)
+//                                            .orElseThrow(() -> new RestaurantException(
+//                                                    RestaurantErrorCode.CATEGORY_NOT_FOUND,
+//                                                    "카테고리를 찾을 수 없습니다: " + categoryId
+//                                            ));
+//                            relationEntity.setCategory(categoryEntity);
+//                        }
+//                    });
+//        }
+//    }
+    /**
+     * RestaurantCategoryRelation의 Category 참조 설정
+     * 수정: isPrimary가 아닌 categoryId로 매칭하도록 변경
+     */
     private void resolveRestaurantCategoryRelations(RestaurantEntity entity, Restaurant restaurant) {
+        // categoryId별로 도메인 relation 매핑
+        Map<String, RestaurantCategoryRelation> domainRelationMap = restaurant.getCategoryRelations().stream()
+                .filter(rel -> rel.getCategoryId() != null)
+                .collect(Collectors.toMap(
+                        RestaurantCategoryRelation::getCategoryId,
+                        rel -> rel,
+                        (existing, replacement) -> existing // 중복 시 기존 것 유지
+                ));
+
         for (RestaurantCategoryRelationEntity relationEntity : entity.getCategoryRelations()) {
-            // 도메인에서 매칭되는 categoryId 찾기
-            restaurant.getCategoryRelations().stream()
-                    .filter(domainRelation ->
-                            relationEntity.getIsPrimary().equals(domainRelation.isPrimary()))
-                    .findFirst()
-                    .ifPresent(domainRelation -> {
-                        String categoryId = domainRelation.getCategoryId();
-                        if (categoryId != null) {
-                            RestaurantCategoryEntity categoryEntity =
-                                    restaurantCategoryJpaRepository.findById(categoryId)
-                                            .orElseThrow(() -> new RestaurantException(
-                                                    RestaurantErrorCode.CATEGORY_NOT_FOUND,
-                                                    "카테고리를 찾을 수 없습니다: " + categoryId
-                                            ));
-                            relationEntity.setCategory(categoryEntity);
-                        }
-                    });
+            // relationEntity의 categoryId를 알아내기 위해 도메인에서 순서대로 매칭
+            // (아직 category가 설정되지 않은 상태)
+
+            // 도메인의 relation 중에서 아직 처리되지 않은 첫 번째 것을 가져옴
+            RestaurantCategoryRelation matchedDomainRelation = null;
+
+            for (RestaurantCategoryRelation domainRelation : restaurant.getCategoryRelations()) {
+                String categoryId = domainRelation.getCategoryId();
+                if (categoryId != null && domainRelationMap.containsKey(categoryId)) {
+                    matchedDomainRelation = domainRelation;
+                    domainRelationMap.remove(categoryId); // 처리 완료 표시
+                    break;
+                }
+            }
+
+            if (matchedDomainRelation != null) {
+                String categoryId = matchedDomainRelation.getCategoryId();
+                RestaurantCategoryEntity categoryEntity =
+                        restaurantCategoryJpaRepository.findById(categoryId)
+                                .orElseThrow(() -> new RestaurantException(
+                                        RestaurantErrorCode.CATEGORY_NOT_FOUND,
+                                        "카테고리를 찾을 수 없습니다: " + categoryId
+                                ));
+                relationEntity.setCategory(categoryEntity);
+            }
         }
     }
 
@@ -457,26 +621,34 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public Optional<Menu> findMenuByRestaurantIdAndMenuId(String restaurantId, String menuId) {
-        return findMenuInternal(restaurantId, menuId, false);
+        return findMenuInternal(restaurantId, menuId, false, false);
     }
 
     @Override
     public Optional<Menu> findMenuByRestaurantIdAndMenuIdIncludingHidden(String restaurantId, String menuId) {
-        return findMenuInternal(restaurantId, menuId, true);
+        return findMenuInternal(restaurantId, menuId, true, false);
+    }
+
+    @Override
+    public Optional<Menu> findMenuByRestaurantIdAndMenuIdIncludingDeleted(String restaurantId, String menuId) {
+        return findMenuInternal(restaurantId, menuId, true, true);
     }
 
     /**
      * Menu 단건 조회 (내부 메서드)
      * - Fetch Join으로 OptionGroup, Option 한 번에 로딩
      */
-    private Optional<Menu> findMenuInternal(String restaurantId, String menuId, boolean includeHidden) {
+    private Optional<Menu> findMenuInternal(String restaurantId, String menuId, boolean includeHidden, boolean includeDeleted) {
         try {
             BooleanExpression condition = menuEntity.restaurant.id.eq(restaurantId)
                     .and(menuEntity.id.eq(menuId));
 
             if (!includeHidden) {
-                condition = condition.and(menuEntity.isDeleted.eq(false))
-                        .and(menuEntity.isAvailable.eq(true));
+                condition = condition.and(menuEntity.isAvailable.eq(true));
+            }
+
+            if (!includeDeleted) {
+                condition = condition.and(menuEntity.isDeleted.eq(false));
             }
 
             MenuEntity entity = queryFactory
@@ -504,12 +676,17 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
 
     @Override
     public Page<Menu> findMenusByRestaurantId(String restaurantId, Pageable pageable) {
-        return findMenusInternal(restaurantId, null, null, false, pageable);
+        return findMenusInternal(restaurantId, null, null, false, false, pageable);
     }
 
     @Override
     public Page<Menu> findMenusByRestaurantIdIncludingHidden(String restaurantId, Pageable pageable) {
-        return findMenusInternal(restaurantId, null, null, true, pageable);
+        return findMenusInternal(restaurantId, null, null, true, false, pageable);
+    }
+
+    @Override
+    public Page<Menu> findMenusByRestaurantIdIncludingDeleted(String restaurantId, Pageable pageable) {
+        return findMenusInternal(restaurantId, null, null, true, true, pageable);
     }
 
     @Override
@@ -517,12 +694,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         if (categoryId == null || categoryId.isBlank()) {
             throw new RestaurantException(MenuErrorCode.CATEGORY_NOT_FOUND);
         }
-        return findMenusInternal(restaurantId, categoryId, null, false, pageable);
+        return findMenusInternal(restaurantId, categoryId, null, false, false, pageable);
     }
 
     @Override
     public Page<Menu> searchMenusByRestaurantIdAndName(String restaurantId, String menuName, Pageable pageable) {
-        return findMenusInternal(restaurantId, null, menuName, false, pageable);
+        return findMenusInternal(restaurantId, null, menuName, false, false, pageable);
     }
 
     /**
@@ -533,6 +710,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             String categoryId,
             String menuName,
             boolean includeHidden,
+            boolean includeDeleted,
             Pageable pageable
     ) {
         try {
@@ -540,8 +718,11 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             BooleanExpression condition = menuEntity.restaurant.id.eq(restaurantId);
 
             if (!includeHidden) {
-                condition = condition.and(menuEntity.isDeleted.eq(false))
-                        .and(menuEntity.isAvailable.eq(true));
+                condition = condition.and(menuEntity.isAvailable.eq(true));
+            }
+
+            if (!includeDeleted) {
+                condition = condition.and(menuEntity.isDeleted.eq(false));
             }
 
             if (menuName != null && !menuName.isBlank()) {

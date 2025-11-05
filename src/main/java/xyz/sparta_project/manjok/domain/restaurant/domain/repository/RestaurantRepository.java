@@ -111,6 +111,30 @@ public interface RestaurantRepository {
      */
     Page<Restaurant> findAllIncludingDeleted(Pageable pageable);
 
+    /**
+     * Restaurant와 Menu ID로 단일 Menu 조회 (관리자용)
+     * - 삭제된 메뉴도 포함
+     *
+     * API: GET /v1/admin/restaurants/{restaurantId}/menus/{menuId}
+     *
+     * @param restaurantId Restaurant ID (필수)
+     * @param menuId Menu ID
+     * @return Menu (없으면 Optional.empty())
+     */
+    Optional<Menu> findMenuByRestaurantIdAndMenuIdIncludingDeleted(String restaurantId, String menuId);
+
+    /**
+     * Restaurant의 전체 Menu 목록 조회 (관리자용, 페이징)
+     * - 삭제된 메뉴도 포함
+     *
+     * API: GET /v1/admin/restaurants/{restaurantId}/menus
+     *
+     * @param restaurantId Restaurant ID
+     * @param pageable 페이징 및 정렬 정보
+     * @return Menu 페이지
+     */
+    Page<Menu> findMenusByRestaurantIdIncludingDeleted(String restaurantId, Pageable pageable);
+
     // ==================== READ - Restaurant 검색 ====================
 
     /**
