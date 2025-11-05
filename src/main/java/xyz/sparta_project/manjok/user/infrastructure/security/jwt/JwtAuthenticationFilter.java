@@ -39,7 +39,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			// 토큰 유효성 검사 및 인증 처리
 			if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
 				UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.getId(token));
-				// 권한 불러오기 나중에 수정해야 함 (Redis whitelist에서 가져오는걸로)
 				UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 				authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 				SecurityContextHolder.getContext().setAuthentication(authToken);

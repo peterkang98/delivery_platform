@@ -17,7 +17,7 @@ public class JwtTokenProvider {
 	private final long accessTokenValidityInMs;
 
 	public JwtTokenProvider(@Value("${jwt.secret}") String secret,
-							@Value("${jwt.access-token-exp}") long accessTokenValidityInMs) {
+							@Value("${jwt.token-exp}") long accessTokenValidityInMs) {
 		byte[] keyBytes = Decoders.BASE64.decode(secret);
 		this.key = Keys.hmacShaKeyFor(keyBytes);
 		this.accessTokenValidityInMs = accessTokenValidityInMs;

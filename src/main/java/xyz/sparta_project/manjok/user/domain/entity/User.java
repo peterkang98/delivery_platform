@@ -65,6 +65,7 @@ public class User extends BaseEntity {
 
 	public void verify() {
 		this.isVerified = true;
+		this.isPublic = true;
 	}
 
 	public void updatePassword(String newPassword) {

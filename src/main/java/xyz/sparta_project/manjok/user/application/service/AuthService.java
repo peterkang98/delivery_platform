@@ -17,6 +17,7 @@ import xyz.sparta_project.manjok.user.infrastructure.email.EmailService;
 import xyz.sparta_project.manjok.user.infrastructure.security.jwt.JwtTokenProvider;
 import xyz.sparta_project.manjok.user.presentation.dto.LoginRequest;
 import xyz.sparta_project.manjok.user.presentation.dto.ConfirmPasswordResetRequest;
+import xyz.sparta_project.manjok.user.presentation.dto.PasswordResetRequest;
 import xyz.sparta_project.manjok.user.presentation.dto.SignupRequest;
 
 import static xyz.sparta_project.manjok.user.exception.UserErrorCode.*;
@@ -47,7 +48,7 @@ public class AuthService {
 		verificationRepository.save(token);
 		emailService.sendVerificationEmail(request.email(), token.getId());
 
-		return ApiResponse.success(null, "회원가입 성공! 본인 확인용 이메일을 보냈습니다.");
+		return ApiResponse.success(null, "회원가입 성공! 로그인은 이메일 인증 후 가능합니다. 24시간 이내에 이메일 인증을 완료해주세요.");
 	}
 
 	@Transactional(readOnly = true)
@@ -68,12 +69,10 @@ public class AuthService {
 
 		token.markAsUsed();
 
-		userRepository.save(user);
-
 		return ApiResponse.success(null, "이메일 인증 성공");
 	}
 
-	public ApiResponse<?> createPasswordResetToken(SignupRequest request) {
+	public ApiResponse<?> createPasswordResetToken(PasswordResetRequest request) {
 		User foundUser = getUser(request.email());
 		VerificationToken token = VerificationToken.builder()
 												   .tokenType(TokenType.PASSWORD_RESET)
@@ -89,7 +88,7 @@ public class AuthService {
 		VerificationToken token = verifyToken(request.token(), TokenType.PASSWORD_RESET);
 
 		User user = token.getUser();
-		user.updatePassword(request.newPassword());
+		user.updatePassword(passwordEncoder.encode(request.newPassword()));
 
 		token.markAsUsed();
 

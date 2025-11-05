@@ -40,8 +40,7 @@ logging:
 
 jwt:
   secret: ${JWT_ENC_KEY}
-  access-token-exp: 900000  # 15분
-  refresh-token-exp: 604800000  # 7일
+  token-exp: 1800000  # 30분
 
 backend:
   base-url: ${BASE_URL:http://localhost:8080}

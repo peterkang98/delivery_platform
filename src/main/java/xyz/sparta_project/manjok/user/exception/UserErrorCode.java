@@ -15,7 +15,8 @@ public enum UserErrorCode implements ErrorCode {
 	INVALID_LOGIN_EMAIL("USER_006", "이메일이 존재하지 않습니다", 401),
 	VERIFICATION_TOKEN_ERROR("EMAIL_002", "유효하지 않은 검증 토큰입니다", 404),
 	USED_VERIFICATION_TOKEN_ERROR("EMAIL_003", "이미 검증된 토큰입니다", 409),
-	EXPIRED_VERIFICATION_TOKEN_ERROR("EMAIL_004", "만료된 검증 토큰입니다", 410);
+	EXPIRED_VERIFICATION_TOKEN_ERROR("EMAIL_004", "만료된 검증 토큰입니다", 410),
+	EXPIRED_REFRESH_TOKEN_ERROR("EMAIL_005", "갱신 토큰이 만료되었습니다. 다시 로그인 부탁드립니다.", 410);
 
 	private final String code;
 	private final String message;
