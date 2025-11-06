@@ -101,14 +101,14 @@ public class AuthService {
 
 	private VerificationToken verifyToken(String tokenValue, TokenType type) {
 		VerificationToken token = verificationRepository.findByIdAndTokenType(tokenValue, type)
-														.orElseThrow(() -> new UserException(VERIFICATION_TOKEN_ERROR));
+														.orElseThrow(() -> new UserException(VERIFICATION_TOKEN));
 
 		if (token.isUsed()) {
-			throw new UserException(USED_VERIFICATION_TOKEN_ERROR);
+			throw new UserException(USED_VERIFICATION_TOKEN);
 		}
 
 		if (token.isExpired()) {
-			throw new UserException(EXPIRED_VERIFICATION_TOKEN_ERROR);
+			throw new UserException(EXPIRED_VERIFICATION_TOKEN);
 		}
 
 		return token;

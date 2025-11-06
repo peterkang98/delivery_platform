@@ -7,7 +7,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
+import xyz.sparta_project.manjok.global.presentation.exception.GlobalErrorCode;
+import xyz.sparta_project.manjok.user.domain.service.RoleCheck;
 import xyz.sparta_project.manjok.user.domain.vo.Role;
+import xyz.sparta_project.manjok.user.exception.UserErrorCode;
+import xyz.sparta_project.manjok.user.exception.UserException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +38,12 @@ public class User extends BaseEntity {
 	@OneToMany
 	private List<Address> addresses = new ArrayList<>();
 
+	@OneToMany(mappedBy = "requester")
+	private List<RolePromotionRequest> sentRequests = new ArrayList<>();
+
+	@OneToMany(mappedBy = "reviewer")
+	private List<RolePromotionRequest> reviewedRequests = new ArrayList<>();
+
 	@Column(name = "is_verified", nullable = false)
 	private Boolean isVerified = false;
 
@@ -44,16 +54,16 @@ public class User extends BaseEntity {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
-	@Column(name = "updated_by", length = 10)
+	@Column(name = "updated_by", length = 36)
 	private String updatedBy;
 
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
-	@Column(name = "deleted_by", length = 10)
+	@Column(name = "deleted_by", length = 36)
 	private String deletedBy;
 
-	@Column(name = "created_by", length = 10)
+	@Column(name = "created_by", length = 36)
 	private String createdBy;
 
 	@Builder
@@ -72,9 +82,11 @@ public class User extends BaseEntity {
 		this.password = newPassword;
 	}
 
-	public void updateRole(Role newRole, String updatedBy) {
+	public void promoteRole(Role newRole, RoleCheck roleCheck) {
+		if (!roleCheck.check()) {
+			throw new UserException(GlobalErrorCode.FORBIDDEN); //접근 권한 없음
+		}
 		this.role = newRole;
-		this.updatedBy = updatedBy;
 	}
 
 	public void softDelete(String deletedBy) {
