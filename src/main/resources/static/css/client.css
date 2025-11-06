@@ -1,0 +1,28 @@
+.layout {
+    display: grid;
+    grid-template-columns: 300px auto;
+    grid-template-rows: 120px auto;
+    height: 100vh;
+}
+
+.sidebar {
+    background: #222;
+    color: #fff;
+}
+
+.sidebar.expanded {
+    width: 300px;
+}
+
+.sidebar.collapsed {
+    width: 50px;
+}
+
+.header {
+    background: #f1f1f1;
+    height: 500px;
+}
+
+.content {
+    padding: 20px;
+}
