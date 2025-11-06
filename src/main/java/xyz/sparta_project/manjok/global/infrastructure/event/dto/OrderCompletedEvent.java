@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.domain.restaurant.domain.event;
+package xyz.sparta_project.manjok.global.infrastructure.event.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

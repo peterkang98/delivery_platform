@@ -1,5 +1,5 @@
 // infrastructure/config/RestTemplateConfig.java
-package xyz.sparta_project.manjok.domain.aiprompt.infrastructure.config;
+package xyz.sparta_project.manjok.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
