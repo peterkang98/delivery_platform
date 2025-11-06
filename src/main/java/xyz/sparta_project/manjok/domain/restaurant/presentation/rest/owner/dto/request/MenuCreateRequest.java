@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto;
+package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

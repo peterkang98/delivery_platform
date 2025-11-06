@@ -7,8 +7,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.sparta_project.manjok.domain.restaurant.application.service.RestaurantQueryService;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.ApiResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 

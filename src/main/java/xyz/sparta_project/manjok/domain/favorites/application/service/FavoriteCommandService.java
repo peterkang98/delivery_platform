@@ -10,7 +10,7 @@ import xyz.sparta_project.manjok.domain.favorites.domain.exception.FavoriteExcep
 import xyz.sparta_project.manjok.domain.favorites.domain.model.Favorite;
 import xyz.sparta_project.manjok.domain.favorites.domain.model.FavoriteType;
 import xyz.sparta_project.manjok.domain.favorites.domain.repository.FavoriteRepository;
-import xyz.sparta_project.manjok.domain.restaurant.domain.event.WishlistChangedEvent;
+import xyz.sparta_project.manjok.global.infrastructure.event.dto.WishlistChangedEvent;
 import xyz.sparta_project.manjok.global.infrastructure.event.infrastructure.Events;
 
 /**

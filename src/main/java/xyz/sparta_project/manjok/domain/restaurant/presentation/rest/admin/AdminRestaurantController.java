@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.sparta_project.manjok.domain.restaurant.application.service.RestaurantCommandService;
 import xyz.sparta_project.manjok.domain.restaurant.application.service.RestaurantQueryService;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantUpdateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.RestaurantStatusUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.AdminRestaurantUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.RestaurantStatusUpdateRequest;
 import xyz.sparta_project.manjok.global.presentation.dto.ApiResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 

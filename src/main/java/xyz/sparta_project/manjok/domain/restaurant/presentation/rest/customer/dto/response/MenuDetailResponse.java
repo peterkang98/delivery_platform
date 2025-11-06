@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto;
+package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,19 +10,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Admin용 Menu 응답 DTO
- * - 관리자가 모든 메뉴 정보를 조회할 때 사용
- * - 모든 정보 포함 (삭제된 정보도 포함)
+ * Customer용 Menu 상세 조회 응답 DTO
+ * - 상세한 정보 포함 (옵션 그룹, 옵션 등)
  */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminMenuResponse {
+public class MenuDetailResponse {
 
     private String menuId;
     private String restaurantId;
-    private String restaurantName;
     private String menuName;
     private String description;
     private String ingredients;
@@ -50,14 +48,8 @@ public class AdminMenuResponse {
     // 옵션 그룹 목록
     private List<MenuOptionGroupDto> optionGroups;
 
-    // 감사 정보 (전체)
+    // 생성 시간
     private LocalDateTime createdAt;
-    private String createdBy;
-    private LocalDateTime updatedAt;
-    private String updatedBy;
-    private Boolean isDeleted;
-    private LocalDateTime deletedAt;
-    private String deletedBy;
 
     @Getter
     @Builder
@@ -71,13 +63,7 @@ public class AdminMenuResponse {
         private Integer minSelection;
         private Integer maxSelection;
         private Integer displayOrder;
-        private Boolean isActive;
         private List<MenuOptionDto> options;
-
-        // 감사 정보
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private Boolean isDeleted;
     }
 
     @Getter
@@ -92,11 +78,5 @@ public class AdminMenuResponse {
         private Boolean isAvailable;
         private Boolean isDefault;
         private Integer displayOrder;
-        private Integer purchaseCount;
-
-        // 감사 정보
-        private LocalDateTime createdAt;
-        private String createdBy;
-        private Boolean isDeleted;
     }
 }

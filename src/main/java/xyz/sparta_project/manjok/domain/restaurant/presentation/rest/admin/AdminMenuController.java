@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.sparta_project.manjok.domain.restaurant.application.service.MenuCommandService;
 import xyz.sparta_project.manjok.domain.restaurant.application.service.MenuQueryService;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminMenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.AdminMenuUpdateRequest;
 import xyz.sparta_project.manjok.global.presentation.dto.ApiResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 

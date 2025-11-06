@@ -2,10 +2,10 @@ package xyz.sparta_project.manjok.domain.restaurant.application.service;
 
 import org.springframework.stereotype.Component;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminMenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.MenuResponse;
 
 import java.util.List;
 import java.util.Set;

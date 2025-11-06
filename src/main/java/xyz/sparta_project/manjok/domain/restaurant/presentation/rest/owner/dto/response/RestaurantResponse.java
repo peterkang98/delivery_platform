@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto;
+package xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Admin용 Restaurant 응답 DTO
- * - 관리자가 모든 식당 정보를 조회할 때 사용
- * - 모든 정보 포함 (삭제된 정보도 포함)
+ * Owner용 Restaurant 응답 DTO
+ * - Owner가 자신의 식당 정보를 조회할 때 사용
+ * - 삭제된 정보도 포함
  */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminRestaurantResponse {
+public class RestaurantResponse {
 
     private String restaurantId;
     private Long ownerId;
@@ -57,9 +57,8 @@ public class AdminRestaurantResponse {
     // 메뉴 통계
     private Integer totalMenuCount;
     private Integer activeMenuCount;
-    private Integer deletedMenuCount;
 
-    // 감사 정보 (전체)
+    // 감사 정보
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
@@ -87,8 +86,6 @@ public class AdminRestaurantResponse {
     public static class CoordinateDto {
         private BigDecimal latitude;
         private BigDecimal longitude;
-        private String googleMapsUrl;
-        private String naverMapUrl;
     }
 
     @Getter

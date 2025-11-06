@@ -9,11 +9,11 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEx
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantUpdateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantCreateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.AdminRestaurantUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.RestaurantCreateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.RestaurantUpdateRequest;
 
 import java.util.*;
 import java.util.stream.Collectors;
