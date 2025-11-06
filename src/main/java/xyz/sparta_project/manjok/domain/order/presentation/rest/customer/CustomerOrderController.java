@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import xyz.sparta_project.manjok.domain.order.application.service.OrderCommandService;
 import xyz.sparta_project.manjok.domain.order.application.service.OrderQueryService;
@@ -16,17 +17,21 @@ import xyz.sparta_project.manjok.domain.order.domain.model.*;
 import xyz.sparta_project.manjok.domain.order.presentation.rest.customer.dto.CancelOrderRequest;
 import xyz.sparta_project.manjok.domain.order.presentation.rest.customer.dto.CreateOrderRequest;
 import xyz.sparta_project.manjok.domain.order.presentation.rest.customer.dto.OrderResponse;
+import xyz.sparta_project.manjok.global.infrastructure.security.SecurityUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Customer용 주문 API
+ * Customer용 주문 API 컨트롤러
+ * - 기본 경로: /v1/customers/orders
+ * - 권한: CUSTOMER
  */
 @Slf4j
 @RestController
 @RequestMapping("/v1/customers/orders")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('CUSTOMER')")
 public class CustomerOrderController {
 
     private final OrderCommandService orderCommandService;
@@ -35,12 +40,15 @@ public class CustomerOrderController {
 
     /**
      * 주문 생성
+     * POST /v1/customers/orders
      */
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
-            @Valid @RequestBody CreateOrderRequest request,
-            @RequestHeader("X-User-Id") String userId
-    ) {
+            @Valid @RequestBody CreateOrderRequest request) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 생성 요청: userId={}", userId);
 
         // DTO → 도메인 변환
@@ -67,12 +75,15 @@ public class CustomerOrderController {
 
     /**
      * 내 주문 목록 조회
+     * GET /v1/customers/orders
      */
     @GetMapping
     public ResponseEntity<Page<OrderResponse>> getMyOrders(
-            @RequestHeader("X-User-Id") String userId,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 목록 조회: userId={}", userId);
 
         Page<Order> orders = orderQueryService.getUserOrders(userId, pageable);
@@ -83,13 +94,16 @@ public class CustomerOrderController {
 
     /**
      * 내 주문 목록 조회 (상태 필터)
+     * GET /v1/customers/orders/status/{status}
      */
     @GetMapping("/status/{status}")
     public ResponseEntity<Page<OrderResponse>> getMyOrdersByStatus(
-            @RequestHeader("X-User-Id") String userId,
             @PathVariable OrderStatus status,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 목록 조회 (상태 필터): userId={}, status={}", userId, status);
 
         Page<Order> orders = orderQueryService.getUserOrdersByStatus(userId, status, pageable);
@@ -100,12 +114,15 @@ public class CustomerOrderController {
 
     /**
      * 주문 상세 조회
+     * GET /v1/customers/orders/{orderId}
      */
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable String orderId
-    ) {
+            @PathVariable String orderId) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 상세 조회: userId={}, orderId={}", userId, orderId);
 
         Order order = orderQueryService.getOrder(orderId, userId);
@@ -116,13 +133,16 @@ public class CustomerOrderController {
 
     /**
      * 주문 취소
+     * POST /v1/customers/orders/{orderId}/cancel
      */
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(
-            @RequestHeader("X-User-Id") String userId,
             @PathVariable String orderId,
-            @Valid @RequestBody CancelOrderRequest request
-    ) {
+            @Valid @RequestBody CancelOrderRequest request) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 취소 요청: userId={}, orderId={}", userId, orderId);
 
         orderCommandService.cancelOrder(orderId, request.getCancelReason(), userId);
@@ -137,12 +157,15 @@ public class CustomerOrderController {
 
     /**
      * 주문 완료 (배달 완료 확인)
+     * POST /v1/customers/orders/{orderId}/complete
      */
     @PostMapping("/{orderId}/complete")
     public ResponseEntity<OrderResponse> completeOrder(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable String orderId
-    ) {
+            @PathVariable String orderId) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 완료 요청: userId={}, orderId={}", userId, orderId);
 
         orderCommandService.completeOrder(orderId, userId);
@@ -157,12 +180,15 @@ public class CustomerOrderController {
 
     /**
      * 주문 삭제 (소프트 삭제)
+     * DELETE /v1/customers/orders/{orderId}
      */
     @DeleteMapping("/{orderId}")
     public ResponseEntity<Void> deleteOrder(
-            @RequestHeader("X-User-Id") String userId,
-            @PathVariable String orderId
-    ) {
+            @PathVariable String orderId) {
+
+        String userId = SecurityUtils.getCurrentUserId()
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
+
         log.info("주문 삭제 요청: userId={}, orderId={}", userId, orderId);
 
         orderCommandService.deleteOrder(orderId, userId);

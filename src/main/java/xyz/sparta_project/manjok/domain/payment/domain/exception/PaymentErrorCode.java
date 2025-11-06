@@ -41,6 +41,7 @@ public enum PaymentErrorCode implements ErrorCode {
     CANCEL_REASON_REQUIRED("PAYMENT_063", "취소 사유는 필수입니다.", 400),
     CANCEL_REASON_TOO_LONG("PAYMENT_064", "취소 사유는 500자를 초과할 수 없습니다.", 400),
     INVALID_REQUESTER("PAYMENT_065", "유효하지 않은 요청자입니다.", 400),
+    PAYMENT_CANCEL_FAILED("PAYMENT_066", "결제 취소에 실패했습니다.", 500),
 
     // 검증 관련 (PAYMENT_080~089)
     AMOUNT_MISMATCH("PAYMENT_080", "결제 금액이 주문 금액과 일치하지 않습니다.", 400),
@@ -54,7 +55,13 @@ public enum PaymentErrorCode implements ErrorCode {
     PAYMENT_DELETE_FAILED("PAYMENT_093", "결제 삭제에 실패했습니다.", 500),
 
     // 이벤트 처리 (PAYMENT_100~109)
-    EVENT_PROCESSING_FAILED("PAYMENT_100", "이벤트 처리 중 오류가 발생했습니다.", 500);
+    EVENT_PROCESSING_FAILED("PAYMENT_100", "이벤트 처리 중 오류가 발생했습니다.", 500),
+    TOSS_API_CONNECTION_FAILED("PAYMENT_101", "토스 API 연결에 실패했습니다.", 500),
+    TOSS_API_UNAUTHORIZED("PAYMENT_102", "토스 API 인증에 실패했습니다.", 500),
+    TOSS_API_PAYMENT_NOT_FOUND("PAYMENT_103", "토스에서 결제를 찾을 수 없습니다.", 500),
+    TOSS_PAYMENT_AMOUNT_MISMATCH("PAYMENT_104", "결제 금액이 일치하지 않습니다.", 500),
+    TOSS_ORDER_ID_MISMATCH("PAYMENT_105", "주문 ID가 일치하지 않습니다.", 500),
+    TOSS_PAYMENT_NOT_COMPLETED("PAYMENT_106", "토스 결제가 완료되지 않았습니다.", 500);
 
     private final String code;
     private final String message;

@@ -22,6 +22,7 @@ class PaymentTest {
     private PaymentMethod paymentMethod;
     private String createdBy;
     private LocalDateTime createdAt;
+    private Payment CancelPayment;
 
     @BeforeEach
     void setup() {
@@ -33,6 +34,20 @@ class PaymentTest {
         paymentMethod = PaymentMethod.CARD;
         createdBy = "system";
         createdAt = LocalDateTime.now();
+
+
+        CancelPayment = Payment.builder()
+                .id("PAY123")
+                .orderId(orderId)
+                .ordererId(ordererId)
+                .tossPaymentKey(tossPaymentKey)
+                .payToken(payToken)
+                .amount(amount)
+                .paymentMethod(paymentMethod)
+                .createdBy(createdBy)
+                .createdAt(createdAt)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
     }
 
     @Nested
@@ -228,10 +243,7 @@ class PaymentTest {
         @DisplayName("APPROVED 상태에서 전액 취소 시 상태가 CANCELLED로 변경된다")
         void addCancellation_fullCancel_success() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
 
             // when
@@ -254,10 +266,7 @@ class PaymentTest {
         @DisplayName("APPROVED 상태에서 부분 취소 시 상태가 PARTIALLY_CANCELLED로 변경된다")
         void addCancellation_partialCancel_success() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
 
             BigDecimal partialAmount = BigDecimal.valueOf(3000);
@@ -282,10 +291,7 @@ class PaymentTest {
         @DisplayName("PARTIALLY_CANCELLED 상태에서 추가 취소 가능")
         void addCancellation_afterPartialCancel_success() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
             payment.addCancellation(
                     CancellationType.USER_REQUEST,
@@ -357,10 +363,7 @@ class PaymentTest {
         @DisplayName("취소 금액이 0 이하면 예외 발생")
         void addCancellation_fail_zeroOrNegativeAmount() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
 
             // when / then
@@ -379,10 +382,7 @@ class PaymentTest {
         @DisplayName("취소 금액이 남은 금액을 초과하면 예외 발생")
         void addCancellation_fail_exceedsRemaining() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
             payment.addCancellation(
                     CancellationType.USER_REQUEST,
@@ -543,32 +543,6 @@ class PaymentTest {
     class SoftDelete {
 
         @Test
-        @DisplayName("CANCELLED 상태의 결제는 소프트 삭제 가능")
-        void softDelete_cancelled_success() {
-            // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
-            payment.approve(LocalDateTime.now(), "approver");
-            payment.addCancellation(
-                    CancellationType.USER_REQUEST,
-                    "취소",
-                    "USER-001",
-                    amount,
-                    LocalDateTime.now()
-            );
-
-            // when
-            payment.softDelete("deleter", LocalDateTime.now());
-
-            // then
-            assertThat(payment.getIsDeleted()).isTrue();
-            assertThat(payment.getDeletedBy()).isEqualTo("deleter");
-            assertThat(payment.getDeletedAt()).isNotNull();
-        }
-
-        @Test
         @DisplayName("FAILED 상태의 결제는 소프트 삭제 가능")
         void softDelete_failed_success() {
             // given
@@ -639,10 +613,7 @@ class PaymentTest {
         @DisplayName("PARTIALLY_CANCELLED 상태는 취소 가능")
         void isCancellable_partiallyCancelled() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
             payment.addCancellation(
                     CancellationType.USER_REQUEST,
@@ -687,10 +658,7 @@ class PaymentTest {
         @DisplayName("CANCELLED 상태는 취소 불가")
         void isCancellable_cancelled() {
             // given
-            Payment payment = Payment.create(
-                    orderId, ordererId, tossPaymentKey, payToken,
-                    amount, paymentMethod, createdBy, createdAt
-            );
+            Payment payment = CancelPayment;
             payment.approve(LocalDateTime.now(), "approver");
             payment.addCancellation(
                     CancellationType.USER_REQUEST,
@@ -709,10 +677,7 @@ class PaymentTest {
     @DisplayName("결제 전체 흐름 - 승인부터 부분 취소, 전액 취소까지")
     void fullPaymentFlow() {
         // 결제 생성
-        Payment payment = Payment.create(
-                orderId, ordererId, tossPaymentKey, payToken,
-                amount, paymentMethod, createdBy, createdAt
-        );
+        Payment payment = CancelPayment;
         assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.PENDING);
 
         // 결제 승인

@@ -1,4 +1,4 @@
-pring:
+spring:
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
@@ -12,15 +12,23 @@ pring:
       hibernate:
         show_sql: true
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
 
 logging:
   level:
     org.hibernate.SQL: debug
 
+# 토스페이먼츠 설정
+toss:
+  secret-key: test_sk_P9BRQmyarYYkpPqm5a7prJ07KzLN # 환경변수에서 토스 시크릿 키 읽기
+  api:
+    url: https://api.tosspayments.com  # 토스 API URL
+    timeout:
+      connect: 10000  # 연결 타임아웃 (ms)
+      read: 30000     # 읽기 타임아웃 (ms)
 
 gemini:
   api:

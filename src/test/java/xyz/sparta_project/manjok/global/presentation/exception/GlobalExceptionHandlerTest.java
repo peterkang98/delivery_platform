@@ -4,15 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-//import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.BindException;
@@ -21,11 +22,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-
+import xyz.sparta_project.manjok.user.infrastructure.security.jwt.JwtTokenProvider;
+import xyz.sparta_project.manjok.user.infrastructure.security.userdetails.CustomUserDetailsService;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -35,10 +36,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
 @Import({
         GlobalExceptionHandler.class,
+        GlobalExceptionHandlerTest.TestConfig.class,
+        GlobalExceptionHandlerTest.TestSecurityConfig.class,
         GlobalExceptionHandlerTest.TestController.class
-//        GlobalExceptionHandlerTest.TestSecurityConfig.class
 })
-@DisplayName("GlobalExceptionHandler 테스트")
 @AutoConfigureMockMvc(addFilters = false)
 class GlobalExceptionHandlerTest {
     
@@ -233,19 +234,32 @@ class GlobalExceptionHandlerTest {
         public GlobalExceptionHandler globalExceptionHandler() {
             return new GlobalExceptionHandler();
         }
+
+        @Bean
+        public CustomUserDetailsService customUserDetailsService() {
+            // 실제 클래스의 패키지명을 사용하여 Mock 객체를 Bean으로 등록
+            return org.mockito.Mockito.mock(
+                    xyz.sparta_project.manjok.user.infrastructure.security.userdetails.CustomUserDetailsService.class
+            );
+        }
+
+        @Bean
+        public JwtTokenProvider jwtTokenProvider() {
+            return org.mockito.Mockito.mock(JwtTokenProvider.class);
+        }
     }
 
-//    @TestConfiguration
-//    @EnableWebSecurity
-//    static class TestSecurityConfig {
-//        @Bean
-//        public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
-//            http
-//                    .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
-//                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());  // 모든 요청 허용
-//            return http.build();
-//        }
-//    }
+    @TestConfiguration
+    @EnableWebSecurity
+    static class TestSecurityConfig {
+        @Bean
+        public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
+            http
+                    .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());  // 모든 요청 허용
+            return http.build();
+        }
+    }
 
 
 }
