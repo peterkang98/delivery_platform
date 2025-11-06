@@ -14,6 +14,7 @@ public enum UserErrorCode implements ErrorCode {
 	DUPLICATE_SIGNUP_EMAIL("USER_005", "이미 존재하는 이메일입니다.", 400),
 	INVALID_LOGIN_EMAIL("USER_006", "이메일이 존재하지 않습니다", 404),
 	INVALID_USER_ID("USER_007", "존재하지 않는 사용자 ID입니다.", 404),
+	UNAUTHORIZED_USER("USER_008", "다른 사용자의 정보를 수정할 수 없습니다", 403),
 	VERIFICATION_TOKEN("TOKEN_002", "유효하지 않은 검증 토큰입니다", 404),
 	USED_VERIFICATION_TOKEN("TOKEN_003", "이미 검증된 토큰입니다", 409),
 	EXPIRED_VERIFICATION_TOKEN("TOKEN_004", "만료된 검증 토큰입니다", 410),
