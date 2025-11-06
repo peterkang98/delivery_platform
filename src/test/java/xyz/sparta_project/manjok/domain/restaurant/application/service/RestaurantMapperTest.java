@@ -4,10 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

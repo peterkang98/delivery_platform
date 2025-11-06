@@ -13,10 +13,10 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEx
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 
 import java.math.BigDecimal;

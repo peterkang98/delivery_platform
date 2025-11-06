@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+//import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+//import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.BindException;
@@ -31,13 +32,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
 @Import({
         GlobalExceptionHandler.class,
-        GlobalExceptionHandlerTest.TestController.class,
-        GlobalExceptionHandlerTest.TestSecurityConfig.class
+        GlobalExceptionHandlerTest.TestController.class
+//        GlobalExceptionHandlerTest.TestSecurityConfig.class
 })
 @DisplayName("GlobalExceptionHandler 테스트")
+@AutoConfigureMockMvc(addFilters = false)
 class GlobalExceptionHandlerTest {
     
     @Autowired
@@ -233,17 +235,17 @@ class GlobalExceptionHandlerTest {
         }
     }
 
-    @TestConfiguration
-    @EnableWebSecurity
-    static class TestSecurityConfig {
-        @Bean
-        public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
-            http
-                    .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
-                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());  // 모든 요청 허용
-            return http.build();
-        }
-    }
+//    @TestConfiguration
+//    @EnableWebSecurity
+//    static class TestSecurityConfig {
+//        @Bean
+//        public SecurityFilterChain testSecurityFilterChain(HttpSecurity http) throws Exception {
+//            http
+//                    .csrf(AbstractHttpConfigurer::disable)  // CSRF 비활성화
+//                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());  // 모든 요청 허용
+//            return http.build();
+//        }
+//    }
 
 
 }
