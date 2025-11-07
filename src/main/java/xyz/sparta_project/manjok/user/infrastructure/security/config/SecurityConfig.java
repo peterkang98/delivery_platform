@@ -42,7 +42,7 @@ public class SecurityConfig {
 					auth.requestMatchers("/v1/customers/**").hasRole("CUSTOMER");
 					auth.requestMatchers("/v1/owners/**").hasRole("OWNER");
 					auth.requestMatchers("/v1/admin/**").hasAnyRole("MASTER", "MANAGER");
-					auth.requestMatchers("/v1/role-promotions").hasAnyRole("CUSTOMER", "MASTER", "MANAGER");
+					auth.requestMatchers("/v1/role-promotions", "v1/users/**").hasAnyRole("CUSTOMER", "MASTER", "MANAGER");
 					auth.anyRequest().authenticated();
 				})
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

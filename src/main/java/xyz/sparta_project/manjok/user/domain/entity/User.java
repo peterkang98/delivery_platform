@@ -10,12 +10,14 @@ import xyz.sparta_project.manjok.global.common.dto.BaseEntity;
 import xyz.sparta_project.manjok.global.presentation.exception.GlobalErrorCode;
 import xyz.sparta_project.manjok.user.domain.service.RoleCheck;
 import xyz.sparta_project.manjok.user.domain.vo.Role;
+import xyz.sparta_project.manjok.user.domain.vo.UserAddress;
 import xyz.sparta_project.manjok.user.exception.UserErrorCode;
 import xyz.sparta_project.manjok.user.exception.UserException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "p_user")
@@ -35,8 +37,10 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.CUSTOMER;
 
-	@OneToMany
-	private List<Address> addresses = new ArrayList<>();
+	@ElementCollection(fetch = FetchType.LAZY)
+	@CollectionTable(name="p_user_address", joinColumns = @JoinColumn(name="user_id"))
+	@OrderColumn(name="address_idx")
+	private List<UserAddress> addresses;
 
 	@OneToMany(mappedBy = "requester")
 	private List<RolePromotionRequest> sentRequests = new ArrayList<>();
@@ -89,6 +93,25 @@ public class User extends BaseEntity {
 		this.role = newRole;
 	}
 
+	public void addAddress(UserAddress address) {
+		addresses = toModifiableList(addresses);
+		addresses.add(address);
+	}
+
+	public void emptyAddress() {
+		addresses = null;
+	}
+
+	public void updateAddress(int index, UserAddress newAddress) {
+		addresses = toModifiableList(addresses);
+		this.addresses.set(index, newAddress);
+	}
+
+	public void removeAddress(UserAddress address) {
+		addresses = toModifiableList(addresses);
+		this.addresses.remove(address);
+	}
+
 	public void softDelete(String deletedBy) {
 		this.deletedAt = LocalDateTime.now();
 		this.deletedBy = deletedBy;
@@ -97,4 +120,9 @@ public class User extends BaseEntity {
 	public boolean isDeleted() {
 		return this.deletedAt != null;
 	}
+
+	private <T> List<T> toModifiableList(List<T> items) {
+		return new ArrayList<>(Objects.requireNonNullElseGet(items, ArrayList::new));
+	}
 }
+

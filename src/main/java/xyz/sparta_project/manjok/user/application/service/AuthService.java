@@ -6,6 +6,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.sparta_project.manjok.global.infrastructure.email.EmailSentEvent;
+import xyz.sparta_project.manjok.global.infrastructure.event.infrastructure.Events;
 import xyz.sparta_project.manjok.global.presentation.dto.ApiResponse;
 import xyz.sparta_project.manjok.user.domain.entity.User;
 import xyz.sparta_project.manjok.user.domain.entity.VerificationToken;
@@ -13,7 +15,7 @@ import xyz.sparta_project.manjok.user.domain.repository.UserRepository;
 import xyz.sparta_project.manjok.user.domain.repository.VerificationRepository;
 import xyz.sparta_project.manjok.user.domain.vo.TokenType;
 import xyz.sparta_project.manjok.user.exception.UserException;
-import xyz.sparta_project.manjok.user.infrastructure.email.EmailService;
+import xyz.sparta_project.manjok.global.infrastructure.email.EmailService;
 import xyz.sparta_project.manjok.user.infrastructure.security.jwt.JwtTokenProvider;
 import xyz.sparta_project.manjok.user.presentation.dto.LoginRequest;
 import xyz.sparta_project.manjok.user.presentation.dto.ConfirmPasswordResetRequest;
@@ -46,7 +48,7 @@ public class AuthService {
 												   .build();
 		userRepository.save(user);
 		verificationRepository.save(token);
-		emailService.sendVerificationEmail(request.email(), token.getId());
+		Events.raise(EmailSentEvent.createVerificationEvent(request.email(), token.getId()));
 
 		return ApiResponse.success(null, "회원가입 성공! 로그인은 이메일 인증 후 가능합니다. 24시간 이내에 이메일 인증을 완료해주세요.");
 	}
@@ -79,7 +81,7 @@ public class AuthService {
 												   .user(foundUser)
 												   .build();
 		verificationRepository.save(token);
-		emailService.sendPasswordResetEmail(request.email(), token.getId());
+		Events.raise(EmailSentEvent.createPasswordResetEvent(request.email(), token.getId()));
 
 		return ApiResponse.success(null, "비밀번호 초기화 이메일 전송 완료. 1시간 이내에 초기화 부탁드립니다.");
 	}
