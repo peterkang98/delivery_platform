@@ -15,15 +15,17 @@ public class OwnerController {
 
     @GetMapping("/view/owner")
     public String ownerHome() {
-        // 인증 정보가 없으면 로그인 페이지로 리다이렉트
-        if (SecurityUtils.getCurrentUserDetails().isEmpty()) {
-            return "redirect:/view/owner/login";
-        }
-
-        // 권한 체크 - OWNER 권한이 있는지 확인
-        return SecurityUtils.getCurrentRole()
-                .filter(role -> role == Role.OWNER)
-                .map(role -> "owner")
-                .orElse("redirect:/view/owner/login");
+        return "owner";
     }
+//        // 인증 정보가 없으면 로그인 페이지로 리다이렉트
+//        if (SecurityUtils.getCurrentUserDetails().isEmpty()) {
+//            return "redirect:/view/owner/login";
+//        }
+//
+//        // 권한 체크 - OWNER 권한이 있는지 확인
+//        return SecurityUtils.getCurrentRole()
+//                .filter(role -> role == Role.OWNER)
+//                .map(role -> "owner")
+//                .orElse("redirect:/view/owner/login");
+//    }
 }

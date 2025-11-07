@@ -44,7 +44,7 @@ class RestaurantCommandServiceTest {
     private RestaurantCategory testCategory;
     private RestaurantCategory japaneseCategory;  // 일식 카테고리 추가
     private RestaurantCreateRequest createRequest;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "홍길동";
 
     @BeforeEach

@@ -3,6 +3,7 @@ package xyz.sparta_project.manjok.global.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
@@ -183,7 +185,7 @@ public class DataInitializer implements CommandLineRunner {
      */
     private void createRestaurantsForOwner(User owner, List<RestaurantCategory> categories, boolean isOwner1) {
         String ownerPrefix = isOwner1 ? "오너1" : "오너2";
-        Long ownerId = Long.valueOf(owner.getId().hashCode());
+        String ownerId = owner.getId();
         String createdBy = "OWNER_" + owner.getUsername();
 
         // 서울 5개 레스토랑
@@ -246,7 +248,7 @@ public class DataInitializer implements CommandLineRunner {
     /**
      * 레스토랑 객체 생성
      */
-    private Restaurant createRestaurant(Long ownerId, String ownerName, String name,
+    private Restaurant createRestaurant(String ownerId, String ownerName, String name,
                                         String province, String city, String district,
                                         String detailAddress, double lat, double lon,
                                         RestaurantCategory category, String createdBy) {

@@ -42,7 +42,7 @@ class RestaurantQueryServiceTest {
 
     private Restaurant testRestaurant;
     private RestaurantCategory testCategory;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "홍길동";
 
     @BeforeEach
@@ -310,7 +310,7 @@ class RestaurantQueryServiceTest {
         Restaurant noCategoryRestaurant = Restaurant.builder()
                 .id(UUID.randomUUID().toString())
                 .createdAt(LocalDateTime.now())
-                .ownerId(2L)
+                .ownerId("2")
                 .ownerName("김철수")
                 .restaurantName("카테고리없는식당")
                 .status(RestaurantStatus.OPEN)

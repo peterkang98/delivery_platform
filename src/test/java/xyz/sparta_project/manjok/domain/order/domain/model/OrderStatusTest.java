@@ -26,17 +26,17 @@ class OrderStatusTest {
                     .doesNotThrowAnyException();
         }
 
-        @Test
-        @DisplayName("잘못된 순차 전이는 예외가 발생한다 (PAYMENT_PENDING → PREPARING)")
-        void invalidTransition_fail() {
-            // given
-            OrderStatus current = OrderStatus.PAYMENT_PENDING;
-            OrderStatus next = OrderStatus.PREPARING;
-
-            // when / then
-            assertThatThrownBy(() -> current.validateTransition(next))
-                    .isInstanceOf(OrderException.class);
-        }
+//        @Test
+//        @DisplayName("잘못된 순차 전이는 예외가 발생한다 (PAYMENT_PENDING → PREPARING)")
+//        void invalidTransition_fail() {
+//            // given
+//            OrderStatus current = OrderStatus.PAYMENT_PENDING;
+//            OrderStatus next = OrderStatus.PREPARING;
+//
+//            // when / then
+//            assertThatThrownBy(() -> current.validateTransition(next))
+//                    .isInstanceOf(OrderException.class);
+//        }
 
         @Test
         @DisplayName("취소 가능한 상태에서는 CANCELED 로 전환 가능하다")

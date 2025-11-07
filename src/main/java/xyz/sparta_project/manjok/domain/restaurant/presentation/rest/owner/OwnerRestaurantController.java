@@ -48,7 +48,7 @@ public class OwnerRestaurantController {
         String ownerName = "Owner"; // 임시 값
 
         RestaurantResponse restaurant = restaurantCommandService
-                .createRestaurant(Long.parseLong(ownerId), ownerName, request);
+                .createRestaurant(ownerId, ownerName, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(restaurant, "식당이 성공적으로 등록되었습니다."));
@@ -66,7 +66,7 @@ public class OwnerRestaurantController {
                 .orElseThrow(() -> new IllegalStateException("인증된 사용자 정보를 찾을 수 없습니다."));
 
         PageResponse<RestaurantResponse> restaurants = restaurantQueryService
-                .getRestaurantsByOwnerId(Long.parseLong(ownerId), pageable);
+                .getRestaurantsByOwnerId(ownerId, pageable);
 
         return ResponseEntity.ok(ApiResponse.success(restaurants));
     }

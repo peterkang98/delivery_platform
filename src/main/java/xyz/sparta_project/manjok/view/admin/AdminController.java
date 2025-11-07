@@ -15,15 +15,16 @@ public class AdminController {
 
     @GetMapping("/view/admin")
     public String adminHome() {
-        // 인증 정보가 없으면 로그인 페이지로 리다이렉트
-        if (SecurityUtils.getCurrentUserDetails().isEmpty()) {
-            return "redirect:/view/admin/login";
-        }
-
-        // 권한 체크 - MANAGER 또는 MASTER 권한이 있는지 확인
-        return SecurityUtils.getCurrentRole()
-                .filter(role -> role == Role.MANAGER || role == Role.MASTER)
-                .map(role -> "admin")
-                .orElse("redirect:/view/admin/login");
+        return "admin";
+//        // 인증 정보가 없으면 로그인 페이지로 리다이렉트
+//        if (SecurityUtils.getCurrentUserDetails().isEmpty()) {
+//            return "redirect:/view/admin/login";
+//        }
+//
+//        // 권한 체크 - MANAGER 또는 MASTER 권한이 있는지 확인
+//        return SecurityUtils.getCurrentRole()
+//                .filter(role -> role == Role.MANAGER || role == Role.MASTER)
+//                .map(role -> "admin")
+//                .orElse("redirect:/view/admin/login");
     }
 }

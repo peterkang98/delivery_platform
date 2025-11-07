@@ -22,7 +22,7 @@ import java.util.Map;
 public class AdminRestaurantResponse {
 
     private String restaurantId;
-    private Long ownerId;
+    private String ownerId;
     private String ownerName;
     private String restaurantName;
     private String status;

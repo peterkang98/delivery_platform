@@ -15,12 +15,12 @@ function getTokenKey() {
 }
 
 // 토큰 관리
-function getToken() {
-    return localStorage.getItem(getTokenKey());
+function setToken(token) {
+    localStorage.setItem('authToken_OWNER', token);  // 직접 'OWNER' 명시
 }
 
-function setToken(token) {
-    localStorage.setItem(getTokenKey(), token);
+function getToken() {
+    return localStorage.getItem('authToken_OWNER');  // 직접 'OWNER' 명시
 }
 
 function removeToken() {
@@ -39,8 +39,12 @@ async function login(email, password) {
         if (!response.ok) throw new Error("로그인 실패");
 
         const result = await response.json();
-        setToken(result.data);
-        window.location.href = "/view/owner";
+
+        // 토큰 저장 후 확실하게 저장되도록 보장
+        localStorage.setItem('authToken_OWNER', result.data);
+
+        window.location.replace("/view/owner");
+
         return true;
     } catch (error) {
         console.error("로그인 오류:", error);

@@ -47,7 +47,7 @@ class MenuCommandServiceTest {
     // 테스트 데이터
     private Restaurant testRestaurant;
     private MenuCategory testCategory;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "테스트 사장님";
     private final String CREATED_BY = "test-owner";
     private final String UPDATED_BY = "test-updater";

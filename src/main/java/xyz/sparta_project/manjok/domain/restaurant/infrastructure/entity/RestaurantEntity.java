@@ -40,7 +40,7 @@ public class RestaurantEntity extends BaseEntity {
 
     // 기본 정보
     @Column(name = "owner_id", nullable = false)
-    private Long ownerId;
+    private String ownerId;
 
     @Column(name = "owner_name", length = 100)
     private String ownerName;

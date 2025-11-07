@@ -98,7 +98,7 @@ public interface RestaurantRepository {
      * @param pageable 페이징 정보
      * @return Restaurant 페이지
      */
-    Page<Restaurant> findByOwnerId(Long ownerId, Pageable pageable);
+    Page<Restaurant> findByOwnerId(String ownerId, Pageable pageable);
 
     /**
      * 전체 Restaurant 조회 (페이징, 관리자용)
@@ -322,7 +322,7 @@ public interface RestaurantRepository {
      * @param restaurantName Restaurant 이름
      * @return 중복이면 true
      */
-    boolean existsByOwnerIdAndName(Long ownerId, String restaurantName);
+    boolean existsByOwnerIdAndName(String ownerId, String restaurantName);
 
     /**
      * Menu 존재 여부 확인 (Restaurant ID 포함)

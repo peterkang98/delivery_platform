@@ -157,12 +157,10 @@ async function renderContent(menuId) {
                 await renderOrders();
                 break;
             case 'profile':
-                contentDesc.textContent = '내 정보를 관리하세요';
-                contentBody.innerHTML = '<p>사용자 정보 관리 기능 준비 중입니다...</p>';
+                await renderProfile();
                 break;
             case 'qna':
-                contentDesc.textContent = '궁금한 점을 문의하세요';
-                contentBody.innerHTML = '<p>Q&A 기능 준비 중입니다...</p>';
+                await renderQNA();
                 break;
             case 'payment':
                 contentDesc.textContent = 'Toss Payments 결제를 테스트하세요';
@@ -174,6 +172,373 @@ async function renderContent(menuId) {
     } catch (error) {
         console.error('콘텐츠 렌더링 오류:', error);
         contentBody.innerHTML = `<p style="color: red;">오류가 발생했습니다: ${error.message}</p>`;
+    }
+}
+
+// ============ 사용자 정보 페이지 ============
+async function renderProfile() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '내 정보를 확인하세요';
+
+    if (!currentUser) {
+        await loadUserInfo();
+    }
+
+    if (!currentUser) {
+        contentBody.innerHTML = '<p>사용자 정보를 불러올 수 없습니다.</p>';
+        return;
+    }
+
+    contentBody.innerHTML = `
+        <div style="max-width: 600px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+                    기본 정보
+                </h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 5px;">아이디</label>
+                    <p style="margin: 0; font-size: 16px; font-weight: 500;">${currentUser.username}</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 5px;">이메일</label>
+                    <p style="margin: 0; font-size: 16px; font-weight: 500;">${currentUser.email}</p>
+                </div>
+                
+                <h3 style="margin: 30px 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+                    배송지 주소
+                </h3>
+                
+                ${currentUser.addresses && currentUser.addresses.length > 0 ? `
+                    <div style="display: grid; gap: 15px;">
+                        ${currentUser.addresses.map((addr, index) => `
+                            <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0 0 5px 0; font-weight: 500;">주소 ${index + 1}</p>
+                                        <p style="margin: 0; color: #666; font-size: 15px;">${addr.address}</p>
+                                        <p style="margin: 5px 0 0 0; color: #999; font-size: 13px;">
+                                            위도: ${addr.lat.toFixed(6)}, 경도: ${addr.lon.toFixed(6)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p style="color: #999;">등록된 배송지가 없습니다.</p>'}
+                
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary">정보 수정</button>
+                    <button class="btn">주소 추가</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============ Q&A 페이지 (AI 챗봇 - 히스토리 기반) ============
+async function renderQNA() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = 'AI에게 궁금한 점을 물어보세요';
+
+    contentBody.innerHTML = `
+        <div style="max-width: 800px; height: 600px; display: flex; flex-direction: column; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <!-- 채팅 헤더 -->
+            <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px 12px 0 0; color: white;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">🤖</span>
+                    <span>배달의 만족 AI 도우미</span>
+                </h3>
+                <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">무엇이든 물어보세요!</p>
+            </div>
+            
+            <!-- 채팅 메시지 영역 -->
+            <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <div style="text-align: center; color: #999;">
+                    <p style="font-size: 14px;">대화 내역을 불러오는 중...</p>
+                </div>
+            </div>
+            
+            <!-- 입력 영역 -->
+            <div style="padding: 20px; border-top: 1px solid #e0e0e0;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." 
+                           style="flex: 1; padding: 12px 16px; border: 1px solid #ddd; border-radius: 24px; font-size: 15px;"
+                           onkeypress="if(event.key === 'Enter') sendQnaMessage()">
+                    <button onclick="sendQnaMessage()" class="btn btn-primary" 
+                            style="padding: 12px 24px; border-radius: 24px; white-space: nowrap;">
+                        전송
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // QnA 히스토리 로드
+    await loadQnaHistory();
+}
+
+// QnA 히스토리 로드
+async function loadQnaHistory() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/customers/aiprompt/my/qnas`);
+        const histories = response.data;
+
+        if (histories.length === 0) {
+            chatMessagesDiv.innerHTML = `
+                <div style="text-align: center; color: #999; margin-top: 50px;">
+                    <p style="font-size: 48px; margin: 0;">💬</p>
+                    <p style="margin: 10px 0 0 0;">대화를 시작해보세요!</p>
+                    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                        <button onclick="sendSuggestedQnaQuestion('배달 시간은 얼마나 걸리나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            배달 시간은 얼마나 걸리나요?
+                        </button>
+                        <button onclick="sendSuggestedQnaQuestion('결제 방법은 어떤게 있나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            결제 방법은 어떤게 있나요?
+                        </button>
+                        <button onclick="sendSuggestedQnaQuestion('주문 취소는 어떻게 하나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            주문 취소는 어떻게 하나요?
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 히스토리를 채팅 형식으로 렌더링
+            renderQnaHistories(histories);
+        }
+
+    } catch (error) {
+        console.error('QnA 히스토리 로드 실패:', error);
+        chatMessagesDiv.innerHTML = `
+            <div style="text-align: center; color: #999; margin-top: 50px;">
+                <p style="font-size: 48px; margin: 0;">💬</p>
+                <p style="margin: 10px 0 0 0;">대화를 시작해보세요!</p>
+            </div>
+        `;
+    }
+}
+
+function renderQnaHistories(histories) {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    chatMessagesDiv.innerHTML = histories.map(history => `
+        <!-- 사용자 질문 -->
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; 
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${history.requestPrompt}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date(history.createdAt).toLocaleString()}
+                </span>
+            </div>
+        </div>
+        
+        <!-- AI 응답 -->
+        <div style="display: flex; justify-content: flex-start;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #f0f0f0; color: #333;">
+                <strong style="display: block; margin-bottom: 5px; color: #10b981;">🤖 AI</strong>
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${history.responseContent}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date(history.createdAt).toLocaleString()}
+                </span>
+            </div>
+        </div>
+    `).join('');
+
+    scrollQnaChatToBottom();
+}
+
+// 제안 질문 전송
+function sendSuggestedQnaQuestion(question) {
+    document.getElementById('chatInput').value = question;
+    sendQnaMessage();
+}
+
+// QnA 메시지 전송
+async function sendQnaMessage() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    // 입력 필드 초기화 및 비활성화
+    input.value = '';
+    input.disabled = true;
+
+    // 사용자 메시지 즉시 표시
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    // 제안 버튼이 있으면 제거
+    const suggestions = chatMessagesDiv.querySelector('div[style*="text-align: center"]');
+    if (suggestions) {
+        suggestions.remove();
+    }
+
+    chatMessagesDiv.innerHTML += `
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; 
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${question}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date().toLocaleTimeString()}
+                </span>
+            </div>
+        </div>
+    `;
+
+    scrollQnaChatToBottom();
+
+    // 타이핑 인디케이터 표시
+    showQnaTypingIndicator();
+
+    try {
+        // QnA API 호출
+        const response = await fetchAPI(`${API_BASE_URL}/customers/aiprompt/qna`, {
+            method: 'POST',
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        const aiResponse = response.data;
+
+        // 타이핑 인디케이터 제거
+        hideQnaTypingIndicator();
+
+        // AI 응답 추가
+        chatMessagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start;">
+                <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #f0f0f0; color: #333;">
+                    <strong style="display: block; margin-bottom: 5px; color: #10b981;">🤖 AI</strong>
+                    <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${aiResponse.responseContent}</p>
+                    <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                        ${new Date(aiResponse.createdAt).toLocaleString()}
+                    </span>
+                </div>
+            </div>
+        `;
+
+        scrollQnaChatToBottom();
+
+    } catch (error) {
+        console.error('QnA 전송 오류:', error);
+
+        // 타이핑 인디케이터 제거
+        hideQnaTypingIndicator();
+
+        // 오류 메시지 표시
+        chatMessagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start;">
+                <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #fee; color: #c00; border: 1px solid #fcc;">
+                    <p style="margin: 0; line-height: 1.5;">
+                        ❌ 오류가 발생했습니다: ${error.message}
+                    </p>
+                </div>
+            </div>
+        `;
+
+        scrollQnaChatToBottom();
+    }
+
+    // 입력 필드 활성화
+    input.disabled = false;
+    input.focus();
+}
+
+function showQnaTypingIndicator() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.innerHTML += `
+        <div id="qnaTypingIndicator" style="display: flex; justify-content: flex-start;">
+            <div style="padding: 12px 16px; border-radius: 16px; background: #f0f0f0;">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite 0.2s;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes typing {
+                0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+                30% { transform: translateY(-10px); opacity: 1; }
+            }
+        </style>
+    `;
+    scrollQnaChatToBottom();
+}
+
+function hideQnaTypingIndicator() {
+    const indicator = document.getElementById('qnaTypingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+function scrollQnaChatToBottom() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+}
+// ============ 식당 목록 ============
+async function renderRestaurantList() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '식당 목록을 확인하세요';
+    contentBody.innerHTML = '<p>로딩 중...</p>';
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/common/restaurants?size=20`);
+        const restaurants = response.data.content;
+
+        if (restaurants.length === 0) {
+            contentBody.innerHTML = '<p>등록된 식당이 없습니다.</p>';
+            return;
+        }
+
+        contentBody.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                ${restaurants.map(restaurant => `
+                    <div class="restaurant-card" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; cursor: pointer;" 
+                         onclick="showRestaurantDetail('${restaurant.restaurantId}')">
+                        <h3 style="margin: 0 0 10px 0;">${restaurant.restaurantName}</h3>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0;">
+                            ${restaurant.fullAddress || `${restaurant.province} ${restaurant.city} ${restaurant.district}`}
+                        </p>
+                        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                            ${restaurant.categoryNames ? restaurant.categoryNames.map(cat =>
+            `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${cat}</span>`
+        ).join('') : ''}
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                ${restaurant.reviewRating ? `⭐ ${restaurant.reviewRating} (${restaurant.reviewCount})` : '리뷰 없음'}
+                            </div>
+                            <div style="color: ${restaurant.isOpenNow ? '#10b981' : '#ef4444'};">
+                                ${restaurant.isOpenNow ? '영업중' : '영업종료'}
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #888;">
+                            ❤️ ${restaurant.wishlistCount || 0}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        contentBody.innerHTML = `<p style="color: red;">식당 목록을 불러오는데 실패했습니다: ${error.message}</p>`;
     }
 }
 

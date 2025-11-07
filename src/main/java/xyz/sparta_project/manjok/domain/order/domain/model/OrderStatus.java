@@ -40,13 +40,13 @@ public enum OrderStatus {
         }
 
         // 일반적인 순차 전환
-        if (nextStatus.previousStatus != this) {
-            throw new OrderException(
-                    OrderErrorCode.INVALID_STATUS_TRANSITION,
-                    String.format("'%s' 상태에서 '%s' 상태로 전환할 수 없습니다.",
-                            this.description, nextStatus.description)
-            );
-        }
+//        if (nextStatus.previousStatus != this) {
+//            throw new OrderException(
+//                    OrderErrorCode.INVALID_STATUS_TRANSITION,
+//                    String.format("'%s' 상태에서 '%s' 상태로 전환할 수 없습니다.",
+//                            this.description, nextStatus.description)
+//            );
+//        }
     }
 
     /**

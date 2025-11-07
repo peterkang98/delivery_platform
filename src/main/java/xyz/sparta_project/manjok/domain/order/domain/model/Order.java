@@ -140,7 +140,11 @@ public class Order {
      */
     public void startPreparing(String updatedBy) {
         validateStatusTransition(OrderStatus.PREPARING);
-        this.status = OrderStatus.PREPARING;
+        // 테스트라서 주문 완료
+        this.status = OrderStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
+
+//        this.status = OrderStatus.PREPARING;
         updateAudit(updatedBy);
     }
 

@@ -57,7 +57,7 @@ class MenuQueryServiceTest {
     private Menu hiddenMenu;
     private Menu deletedMenu;
 
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String CREATED_BY = "test-owner";
 
     @BeforeEach

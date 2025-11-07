@@ -112,7 +112,7 @@ public class RestaurantQueryService {
      * - Owner가 소유한 식당 목록
      * - 삭제된 것도 조회 가능
      */
-    public PageResponse<RestaurantResponse> getRestaurantsByOwnerId(Long ownerId, Pageable pageable) {
+    public PageResponse<RestaurantResponse> getRestaurantsByOwnerId(String ownerId, Pageable pageable) {
         log.info("Owner 식당 목록 조회 - ownerId: {}", ownerId);
 
         Page<Restaurant> restaurantPage = restaurantRepository.findByOwnerId(ownerId, pageable);

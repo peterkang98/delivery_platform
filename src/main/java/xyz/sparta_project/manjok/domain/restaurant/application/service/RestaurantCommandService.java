@@ -40,7 +40,7 @@ public class RestaurantCommandService {
      * - 초기 상태: OPEN, isActive=true
      * - 주소 및 좌표 검증
      */
-    public RestaurantResponse createRestaurant(Long ownerId, String ownerName,
+    public RestaurantResponse createRestaurant(String ownerId, String ownerName,
                                                RestaurantCreateRequest request) {
         log.info("식당 등록 시작 - ownerId: {}, restaurantName: {}", ownerId, request.getRestaurantName());
 

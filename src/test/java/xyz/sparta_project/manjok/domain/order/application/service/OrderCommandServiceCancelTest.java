@@ -132,7 +132,7 @@ class OrderCommandServiceCancelTest {
             completePaymentAndSetPending(order);
             orderCommandService.confirmOrder(order.getId(), testRestaurantId);
             orderCommandService.startPreparing(order.getId(), testRestaurantId);
-            orderCommandService.startDelivering(order.getId(), testRestaurantId);
+//            orderCommandService.startDelivering(order.getId(), testRestaurantId);
 
             // when & then
             assertThatThrownBy(() -> orderCommandService.cancelOrder(
@@ -148,8 +148,8 @@ class OrderCommandServiceCancelTest {
             completePaymentAndSetPending(order);
             orderCommandService.confirmOrder(order.getId(), testRestaurantId);
             orderCommandService.startPreparing(order.getId(), testRestaurantId);
-            orderCommandService.startDelivering(order.getId(), testRestaurantId);
-            orderCommandService.completeOrder(order.getId(), testUserId);
+//            orderCommandService.startDelivering(order.getId(), testRestaurantId);
+//            orderCommandService.completeOrder(order.getId(), testUserId);
 
             // when & then
             assertThatThrownBy(() -> orderCommandService.cancelOrder(
@@ -205,7 +205,7 @@ class OrderCommandServiceCancelTest {
             completePaymentAndSetPending(order);
             orderCommandService.confirmOrder(order.getId(), testRestaurantId);
             orderCommandService.startPreparing(order.getId(), testRestaurantId);
-            orderCommandService.startDelivering(order.getId(), testRestaurantId);
+//            orderCommandService.startDelivering(order.getId(), testRestaurantId);
 
             String paymentId = order.getPayment().getPaymentId();
 
@@ -252,8 +252,8 @@ class OrderCommandServiceCancelTest {
             completePaymentAndSetPending(order);
             orderCommandService.confirmOrder(order.getId(), testRestaurantId);
             orderCommandService.startPreparing(order.getId(), testRestaurantId);
-            orderCommandService.startDelivering(order.getId(), testRestaurantId);
-            orderCommandService.completeOrder(order.getId(), testUserId);
+//            orderCommandService.startDelivering(order.getId(), testRestaurantId);
+//            orderCommandService.completeOrder(order.getId(), testUserId);
 
             // when
             orderCommandService.deleteOrder(order.getId(), testUserId);

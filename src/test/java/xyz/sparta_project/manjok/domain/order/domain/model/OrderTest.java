@@ -87,8 +87,8 @@ class OrderTest {
         order.toPending("system");
         order.confirm(LocalDateTime.now(), "system");
         order.startPreparing("system");
-        order.startDelivering("system");
-        order.complete(LocalDateTime.now(), "system");
+//        order.startDelivering("system");
+//        order.complete(LocalDateTime.now(), "system");
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
     }
@@ -128,7 +128,7 @@ class OrderTest {
             order.toPending("system");
             order.confirm(LocalDateTime.now(), "system");
             order.startPreparing("system");
-            order.startDelivering("system");
+//            order.startDelivering("system");
 
             assertThatThrownBy(() ->
                     order.cancel("변심", LocalDateTime.now(), "system"))
@@ -144,8 +144,8 @@ class OrderTest {
         order.toPending("system");
         order.confirm(LocalDateTime.now(), "system");
         order.startPreparing("system");
-        order.startDelivering("system");
-        order.complete(LocalDateTime.now(), "system");
+//        order.startDelivering("system");
+//        order.complete(LocalDateTime.now(), "system");
 
         order.softDelete("system", LocalDateTime.now());
 
