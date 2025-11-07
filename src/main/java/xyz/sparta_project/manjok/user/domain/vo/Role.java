@@ -24,10 +24,6 @@ public enum Role {
 		return this.ordinal() > other.ordinal();
 	}
 
-	public boolean canApproveRoleUpgrade() {
-		return this == MANAGER || this == MASTER;
-	}
-
 	private static final Map<String, Role> AUTHORITY_MAP = Arrays.stream(values()).collect(Collectors.toMap(Role::getAuthority, r -> r));
 
 	public static Role fromAuthority(String authority) {

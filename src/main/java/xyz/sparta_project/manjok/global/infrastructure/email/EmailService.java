@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.user.infrastructure.email;
+package xyz.sparta_project.manjok.global.infrastructure.email;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import xyz.sparta_project.manjok.user.infrastructure.email.exception.EmailException;
+import xyz.sparta_project.manjok.global.infrastructure.email.exception.EmailException;
 
-import static xyz.sparta_project.manjok.user.infrastructure.email.exception.EmailErrorCode.EMAIL_ERROR;
+import static xyz.sparta_project.manjok.global.infrastructure.email.exception.EmailErrorCode.EMAIL_ERROR;
 
 @Service
 @RequiredArgsConstructor
