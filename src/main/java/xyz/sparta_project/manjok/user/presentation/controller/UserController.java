@@ -13,22 +13,27 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("v1/users/{userId}")
+@RequestMapping("v1/users")
 public class UserController {
 	private final UserService userService;
 
 	@GetMapping
+	public ResponseEntity<ApiResponse<UserResponse>> getUser() {
+		return ResponseEntity.ok(userService.getUser());
+	}
+
+	@GetMapping("/{userId}")
 	public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable String userId) {
 		return ResponseEntity.ok(userService.getUser(userId));
 	}
 
-	@DeleteMapping()
+	@DeleteMapping("/{userId}")
 	public ResponseEntity<ApiResponse<?>> deleteUser(@PathVariable String userId) {
 		userService.deleteUser(userId);
 		return ResponseEntity.ok(userService.deleteUser(userId));
 	}
 
-	@PostMapping("/addresses")
+	@PostMapping("/{userId}/addresses")
 	public ResponseEntity<ApiResponse<List<UserAddressResponse>>> addAddress(
 			@PathVariable String userId,
 			@RequestBody UserAddressRequest request
@@ -36,7 +41,7 @@ public class UserController {
 		return ResponseEntity.ok(userService.addAddress(userId, request));
 	}
 
-	@PutMapping("/addresses/{index}")
+	@PutMapping("/{userId}/addresses/{index}")
 	public ResponseEntity<ApiResponse<List<UserAddressResponse>>> updateAddress(
 			@PathVariable String userId,
 			@PathVariable int index,
@@ -45,7 +50,7 @@ public class UserController {
 		return ResponseEntity.ok(userService.updateAddress(userId, index, request));
 	}
 
-	@PutMapping("/addresses")
+	@PutMapping("/{userId}/addresses")
 	public ResponseEntity<ApiResponse<List<UserAddressResponse>>> replaceAllAddresses(
 			@PathVariable String userId,
 			@RequestBody List<UserAddressRequest> requests
@@ -53,7 +58,7 @@ public class UserController {
 		return ResponseEntity.ok(userService.replaceAllAddresses(userId, requests));
 	}
 
-	@DeleteMapping("/addresses/{index}")
+	@DeleteMapping("/{userId}/addresses/{index}")
 	public ResponseEntity<ApiResponse<List<UserAddressResponse>>> deleteAddress(
 			@PathVariable String userId,
 			@PathVariable int index

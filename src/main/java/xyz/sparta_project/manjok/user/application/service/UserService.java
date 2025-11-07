@@ -11,6 +11,7 @@ import xyz.sparta_project.manjok.user.domain.repository.UserRepository;
 import xyz.sparta_project.manjok.user.domain.vo.Role;
 import xyz.sparta_project.manjok.user.domain.vo.UserAddress;
 import xyz.sparta_project.manjok.user.exception.UserException;
+import xyz.sparta_project.manjok.user.infrastructure.security.userdetails.CustomUserDetails;
 import xyz.sparta_project.manjok.user.presentation.dto.UserAddressRequest;
 import xyz.sparta_project.manjok.user.presentation.dto.UserAddressResponse;
 import xyz.sparta_project.manjok.user.presentation.dto.UserResponse;
@@ -26,6 +27,12 @@ public class UserService {
 	private final UserRepository userRepository;
 
 	// User
+	public ApiResponse<UserResponse> getUser() {
+		User user = SecurityUtils.getCurrentUserDetails().map(CustomUserDetails::getUser)
+								 .orElseThrow(() -> new UserException(GlobalErrorCode.INVALID_SECURITY_CONTEXT));
+		return ApiResponse.success(new UserResponse(user.getUsername(), user.getEmail(), user.getAddresses()));
+	}
+
 	public ApiResponse<UserResponse> getUser(String userId) {
 		User user = findUser(userId);
 		return ApiResponse.success(new UserResponse(user.getUsername(), user.getEmail(), user.getAddresses()));
@@ -109,7 +116,6 @@ public class UserService {
 	}
 
 	private User findUser(String userId) {
-		User user = userRepository.findById(userId).orElseThrow(() -> new UserException(INVALID_USER_ID));
-		return user;
+		return userRepository.findById(userId).orElseThrow(() -> new UserException(INVALID_USER_ID));
 	}
 }
