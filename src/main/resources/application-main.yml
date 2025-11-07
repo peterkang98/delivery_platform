@@ -21,5 +21,11 @@ logging:
   level:
     org.hibernate.SQL: warn
 
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
+    model: ${GEMINI_MODEL:gemini-2.5-flash}
+    base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+
 server:
   port: 8080

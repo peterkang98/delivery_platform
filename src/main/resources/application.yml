@@ -1,6 +1,14 @@
 spring:
   application:
     name: manjok
+
+  config:
+    import: optional:file:.env[.properties]
+
+  output:
+    ansi:
+      enabled: always
+
   profiles:
     active: develop
 #    active: main
@@ -11,7 +19,31 @@ spring:
       hibernate:
         format_sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL}
+    password: ${EMAIL_PW}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: true
+
 logging:
   level:
     root: info
     xyz.sparta-project: debug
+
+jwt:
+  secret: ${JWT_ENC_KEY}
+  token-exp: 1800000  # 30분
+
+backend:
+  base-url: ${BASE_URL:http://localhost:8080}
+
+frontend:
+  base-url: ${BASE_URL:http://localhost:3000}

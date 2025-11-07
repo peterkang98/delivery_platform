@@ -15,6 +15,7 @@ public enum GlobalErrorCode implements ErrorCode {
      * */
     INTERNAL_SERVER_ERROR("GLOBAL_001", "서버 내부 오류가 발생했습니다.", 500),
     SERVICE_UNAVAILABLE("GLOBAL_002", "서비스를 일시적으로 사용할 수 없습니다.", 503),
+	INVALID_SECURITY_CONTEXT("GLOBAL_003", "보안 컨텍스트에 인증 정보가 존재하지 않습니다.", 500),
 
     /**
      * 클라이언트 에러(400번대)

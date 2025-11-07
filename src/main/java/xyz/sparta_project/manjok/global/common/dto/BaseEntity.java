@@ -1,12 +1,11 @@
 package xyz.sparta_project.manjok.global.common.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import xyz.sparta_project.manjok.global.common.utils.UuidUtils;
 
 import java.time.LocalDateTime;
@@ -29,6 +28,7 @@ import java.time.LocalDateTime;
 @Getter
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
     /**
@@ -41,8 +41,9 @@ public abstract class BaseEntity {
     /**
      * 생성 시간 (서버 시간 기준)
      * */
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+	@CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
     
     /**
      * UUID 재생성 전략
