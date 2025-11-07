@@ -386,73 +386,78 @@ body:has(.main-layout) {
     color: #6b7280;
 }
 
-/* ==================== 모달 ==================== */
+/* ==================== Owner 전용 모달 ==================== */
 
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+.owner-modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 9999 !important;
     animation: fadeIn 0.2s ease;
 }
 
-.modal {
-    background: white;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 85vh;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+.owner-modal {
+    background: white !important;
+    border-radius: 16px !important;
+    width: 90% !important;
+    max-width: 600px !important;
+    max-height: 85vh !important;
+    overflow: visible !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
     animation: slideUp 0.3s ease;
+    display: block !important;
+    position: relative !important;
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 30px;
-    border-bottom: 1px solid #e5e7eb;
+.owner-modal-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 20px 30px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: white !important;
 }
 
-.modal-header h3 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #1f2937;
+.owner-modal-header h3 {
+    margin: 0 !important;
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: #1f2937 !important;
 }
 
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 28px;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+.owner-modal-close {
+    background: none !important;
+    border: none !important;
+    font-size: 28px !important;
+    color: #9ca3af !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
     transition: all 0.2s;
+    line-height: 1 !important;
 }
 
-.modal-close:hover {
-    background: #f3f4f6;
-    color: #374151;
+.owner-modal-close:hover {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
 }
 
-.modal-body {
-    padding: 30px;
-    max-height: calc(85vh - 100px);
-    overflow-y: auto;
+.owner-modal-body {
+    padding: 30px !important;
+    max-height: calc(85vh - 100px) !important;
+    overflow-y: auto !important;
+    background: white !important;
 }
 
 /* 폼 스타일 */
@@ -518,7 +523,7 @@ body:has(.main-layout) {
     cursor: pointer;
 }
 
-.modal-actions {
+.owner-modal-actions {
     display: flex;
     gap: 10px;
     margin-top: 10px;
@@ -526,7 +531,7 @@ body:has(.main-layout) {
     border-top: 1px solid #e5e7eb;
 }
 
-.modal-actions .btn {
+.owner-modal-actions .btn {
     flex: 1;
 }
 
@@ -621,5 +626,279 @@ body:has(.main-layout) {
     .date-filter {
         flex-direction: column;
         align-items: stretch;
+    }
+}
+/* ==================== 이 CSS를 owner.css에 추가하세요 ==================== */
+
+/* ==================== 주문 관리 섹션 ==================== */
+
+.orders-section {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.restaurant-order-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.restaurant-order-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.restaurant-order-header:hover {
+    background: #f3f4f6;
+}
+
+.restaurant-order-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.restaurant-address {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.restaurant-order-toggle {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.order-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding: 6px 12px;
+    background: #e5e7eb;
+    color: #6b7280;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.order-badge.has-orders {
+    background: #fef3c7;
+    color: #d97706;
+    animation: pulse 2s infinite;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #d1d5db;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.toggle-icon {
+    font-size: 14px;
+    color: #6b7280;
+    transition: transform 0.2s;
+}
+
+.restaurant-order-body {
+    padding: 20px;
+    background: white;
+}
+
+/* 주문 목록 */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fefefe;
+    transition: all 0.2s;
+}
+
+.order-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-info h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.order-time {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.order-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.order-item-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 15px;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.item-name {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.item-quantity {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.item-price {
+    font-size: 14px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.order-summary {
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.summary-row:not(:last-child) {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row span:first-child {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.summary-row span:last-child {
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.summary-row strong {
+    color: #3b82f6;
+    font-size: 18px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.order-actions .btn {
+    flex: 1;
+}
+
+.btn-info {
+    background: #06b6d4;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+}
+
+.text-muted {
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .order-item-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+    }
+
+    .item-quantity,
+    .item-price {
+        font-size: 13px;
+    }
+
+    .restaurant-order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .restaurant-order-toggle {
+        width: 100%;
+        justify-content: space-between;
     }
 }

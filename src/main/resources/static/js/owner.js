@@ -87,15 +87,19 @@ function showNotification(message, type = 'success') {
 
 let currentMenu = 'my-restaurant';
 let currentUser = null;
+let currentUserId = null;
 let currentRestaurants = [];
 let currentMenus = [];
 let categories = [];
 let selectedRestaurantId = null;
+let currentOrders = [];
+let selectedOrderRestaurantId = null;
 
 // ==================== 메뉴 정의 ====================
 
 const MENU_ITEMS = [
     { id: 'my-restaurant', label: '내 식당' },
+    { id: 'orders', label: '주문 관리' },
     { id: 'payments', label: '결제 정보' },
     { id: 'profile', label: '사용자 정보' }
 ];
@@ -108,6 +112,7 @@ async function fetchUserInfo() {
         const response = await apiCall('/v1/users');
         if (response && response.data) {
             currentUser = response.data;
+            currentUserId = response.data.userId;
             return response.data;
         }
     } catch (error) {
@@ -335,6 +340,72 @@ async function deleteUserAddress(userId, index) {
     return null;
 }
 
+// 레스토랑의 주문 목록 조회 (PENDING 상태만)
+async function fetchRestaurantOrders(restaurantId) {
+    try {
+        const response = await apiCall(
+            `/v1/owners/orders/restaurants/${restaurantId}/status/PENDING`
+        );
+        if (response && response.content) {
+            return response.content;
+        }
+    } catch (error) {
+        console.error('주문 목록 조회 실패:', error);
+    }
+    return [];
+}
+
+// 주문 확인 (가게 확인)
+async function confirmOrder(orderId, restaurantId) {
+    try {
+        const response = await apiCall(
+            `/v1/owners/orders/${orderId}/confirm?restaurantId=${restaurantId}`,
+            { method: 'POST' }
+        );
+        if (response) {
+            showNotification('주문이 확인되었습니다!');
+            return response;
+        }
+    } catch (error) {
+        console.error('주문 확인 실패:', error);
+    }
+    return null;
+}
+
+// 조리 시작
+async function startPreparing(orderId, restaurantId) {
+    try {
+        const response = await apiCall(
+            `/v1/owners/orders/${orderId}/prepare?restaurantId=${restaurantId}`,
+            { method: 'POST' }
+        );
+        if (response) {
+            showNotification('조리가 시작되었습니다!');
+            return response;
+        }
+    } catch (error) {
+        console.error('조리 시작 실패:', error);
+    }
+    return null;
+}
+
+// 배달 시작
+async function startDelivering(orderId, restaurantId) {
+    try {
+        const response = await apiCall(
+            `/v1/owners/orders/${orderId}/deliver?restaurantId=${restaurantId}`,
+            { method: 'POST' }
+        );
+        if (response) {
+            showNotification('배달이 시작되었습니다!');
+            return response;
+        }
+    } catch (error) {
+        console.error('배달 시작 실패:', error);
+    }
+    return null;
+}
+
 // ==================== UI 렌더링 함수 ====================
 
 // 메인 레이아웃 렌더링
@@ -406,6 +477,9 @@ async function renderContent(menuId) {
             break;
         case 'profile':
             await renderProfile(contentDesc, contentBody);
+            break;
+        case 'orders':
+            await renderOrders(contentDesc, contentBody);
             break;
         default:
             contentBody.innerHTML = `<p>준비 중입니다...</p>`;
@@ -516,6 +590,236 @@ async function viewRestaurantMenus(restaurantId) {
         </div>
     `;
 }
+
+// ========== 5. 주문 관리 렌더링 함수 추가 (renderProfile 함수 아래에 추가) ==========
+
+async function renderOrders(contentDesc, contentBody) {
+    contentDesc.textContent = '주문을 확인하고 관리하세요';
+
+    await fetchMyRestaurants();
+
+    if (currentRestaurants.length === 0) {
+        contentBody.innerHTML = '<p class="empty-message">등록된 식당이 없습니다.</p>';
+        return;
+    }
+
+    contentBody.innerHTML = `
+        <div class="orders-section">
+            <div class="section-header">
+                <h3>주문 관리</h3>
+                <p style="font-size: 14px; color: #6b7280; margin: 0;">
+                    식당을 선택하여 대기 중인 주문을 확인하세요
+                </p>
+            </div>
+            <div class="restaurant-order-list">
+                ${currentRestaurants.map(restaurant => `
+                    <div class="restaurant-order-card" data-restaurant-id="${restaurant.restaurantId}">
+                        <div class="restaurant-order-header" onclick="toggleRestaurantOrders('${restaurant.restaurantId}')">
+                            <div class="restaurant-order-info">
+                                <h4>${restaurant.restaurantName}</h4>
+                                <p class="restaurant-address">${restaurant.address?.fullAddress || '주소 없음'}</p>
+                            </div>
+                            <div class="restaurant-order-toggle">
+                                <span class="order-badge" id="order-count-${restaurant.restaurantId}">
+                                    <span class="loading-spinner"></span>
+                                </span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="restaurant-order-body" id="orders-${restaurant.restaurantId}" style="display: none;">
+                            <div class="loading">주문 정보를 불러오는 중...</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    // 각 식당의 주문 개수 로드
+    currentRestaurants.forEach(async (restaurant) => {
+        const orders = await fetchRestaurantOrders(restaurant.restaurantId);
+        const badge = document.getElementById(`order-count-${restaurant.restaurantId}`);
+        if (badge) {
+            badge.innerHTML = `${orders.length}건`;
+            if (orders.length > 0) {
+                badge.classList.add('has-orders');
+            }
+        }
+    });
+}
+
+async function toggleRestaurantOrders(restaurantId) {
+    const orderBody = document.getElementById(`orders-${restaurantId}`);
+    const card = document.querySelector(`[data-restaurant-id="${restaurantId}"]`);
+    const toggleIcon = card.querySelector('.toggle-icon');
+
+    if (orderBody.style.display === 'none') {
+        // 펼치기
+        orderBody.style.display = 'block';
+        toggleIcon.textContent = '▲';
+
+        // 주문 목록 로드
+        await loadRestaurantOrders(restaurantId);
+    } else {
+        // 접기
+        orderBody.style.display = 'none';
+        toggleIcon.textContent = '▼';
+    }
+}
+
+async function loadRestaurantOrders(restaurantId) {
+    const orderBody = document.getElementById(`orders-${restaurantId}`);
+    orderBody.innerHTML = '<div class="loading">주문 정보를 불러오는 중...</div>';
+
+    const orders = await fetchRestaurantOrders(restaurantId);
+
+    if (orders.length === 0) {
+        orderBody.innerHTML = '<p class="empty-message">대기 중인 주문이 없습니다.</p>';
+        return;
+    }
+
+    orderBody.innerHTML = `
+        <div class="orders-list">
+            ${orders.map(order => `
+                <div class="order-item" data-order-id="${order.orderId}">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h5>주문 #${order.orderId.substring(0, 8)}...</h5>
+                            <span class="badge badge-warning">${getOrderStatusText(order.status)}</span>
+                        </div>
+                        <div class="order-time">
+                            ${formatDateTime(order.createdAt)}
+                        </div>
+                    </div>
+                    
+                    <div class="order-details">
+                        <div class="order-items">
+                            ${order.orderItems?.map(item => `
+                                <div class="order-item-row">
+                                    <span class="item-name">${item.menuName}</span>
+                                    <span class="item-quantity">x ${item.quantity}</span>
+                                    <span class="item-price">${item.price?.toLocaleString()}원</span>
+                                </div>
+                            `).join('') || ''}
+                        </div>
+                        
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span>총 금액</span>
+                                <strong>${order.totalPrice?.toLocaleString()}원</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>배달 주소</span>
+                                <span>${order.deliveryAddress || '-'}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>고객 요청사항</span>
+                                <span>${order.orderMemo || '없음'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        ${getOrderActionButtons(order, restaurantId)}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getOrderStatusText(status) {
+    const statusMap = {
+        'PAYMENT_PENDING': '결제 대기',
+        'PAYMENT_COMPLETED': '결제 완료',
+        'PENDING': '주문 대기',
+        'CONFIRMED': '가게 확인',
+        'PREPARING': '조리 중',
+        'DELIVERING': '배달 중',
+        'COMPLETED': '완료',
+        'CANCELED': '취소'
+    };
+    return statusMap[status] || status;
+}
+
+function getOrderActionButtons(order, restaurantId) {
+    switch(order.status) {
+        case 'PENDING':
+            return `
+                <button class="btn btn-primary" onclick="handleConfirmOrder('${order.orderId}', '${restaurantId}')">
+                    주문 받기
+                </button>
+            `;
+        case 'CONFIRMED':
+            return `
+                <button class="btn btn-success" onclick="handleStartPreparing('${order.orderId}', '${restaurantId}')">
+                    조리 시작
+                </button>
+            `;
+        case 'PREPARING':
+            return `
+                <button class="btn btn-info" onclick="handleStartDelivering('${order.orderId}', '${restaurantId}')">
+                    배달 시작
+                </button>
+            `;
+        default:
+            return `<span class="text-muted">처리 중</span>`;
+    }
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000 / 60); // 분 단위
+
+    if (diff < 1) return '방금 전';
+    if (diff < 60) return `${diff}분 전`;
+    if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`;
+
+    return date.toLocaleString('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// ========== 6. 주문 처리 핸들러 함수 추가 ==========
+
+async function handleConfirmOrder(orderId, restaurantId) {
+    if (!confirm('주문을 받으시겠습니까?')) return;
+
+    const result = await confirmOrder(orderId, restaurantId);
+    if (result) {
+        // 자동으로 조리 시작
+        setTimeout(async () => {
+            const prepareResult = await startPreparing(orderId, restaurantId);
+            if (prepareResult) {
+                await loadRestaurantOrders(restaurantId);
+            }
+        }, 500);
+    }
+}
+
+async function handleStartPreparing(orderId, restaurantId) {
+    if (!confirm('조리를 시작하시겠습니까?')) return;
+
+    const result = await startPreparing(orderId, restaurantId);
+    if (result) {
+        await loadRestaurantOrders(restaurantId);
+    }
+}
+
+async function handleStartDelivering(orderId, restaurantId) {
+    if (!confirm('배달을 시작하시겠습니까?')) return;
+
+    const result = await startDelivering(orderId, restaurantId);
+    if (result) {
+        await loadRestaurantOrders(restaurantId);
+    }
+}
+
 
 // ==================== 결제 정보 렌더링 ====================
 
@@ -717,7 +1021,7 @@ async function showRestaurantCreateModal() {
                 <input type="text" name="tags" placeholder="빠른배달, 맛집, 친절">
             </div>
             
-            <div class="modal-actions">
+            <div class="owner-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary">등록</button>
             </div>
@@ -817,7 +1121,7 @@ async function showRestaurantEditModal(restaurantId) {
                 <input type="text" name="tags" value="${restaurant.tags?.join(', ') || ''}">
             </div>
             
-            <div class="modal-actions">
+            <div class="owner-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary">수정</button>
             </div>
@@ -900,7 +1204,7 @@ async function showMenuCreateModal() {
                 </label>
             </div>
             
-            <div class="modal-actions">
+            <div class="owner-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary">등록</button>
             </div>
@@ -1003,7 +1307,7 @@ async function showMenuEditModal(menuId) {
                 </label>
             </div>
             
-            <div class="modal-actions">
+            <div class="owner-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary">수정</button>
             </div>
@@ -1054,7 +1358,7 @@ function showAddressAddModal() {
                 </div>
             </div>
             
-            <div class="modal-actions">
+            <div class="owner-modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">취소</button>
                 <button type="submit" class="btn btn-primary">추가</button>
             </div>
@@ -1072,7 +1376,7 @@ function showAddressAddModal() {
         };
 
         // userId는 실제 구현에서 가져와야 함
-        const userId = 'current-user-id'; // TODO: 실제 userId로 교체
+        const userId = currentUserId; // TODO: 실제 userId로 교체
         const result = await addUserAddress(userId, addressData);
 
         if (result) {
@@ -1106,7 +1410,7 @@ async function handleDeleteMenu(menuId) {
 async function handleDeleteAddress(index) {
     if (!confirm('정말 이 주소를 삭제하시겠습니까?')) return;
 
-    const userId = 'current-user-id'; // TODO: 실제 userId로 교체
+    const userId = currentUserId; // TODO: 실제 userId로 교체
     const result = await deleteUserAddress(userId, index);
 
     if (result) {
@@ -1119,14 +1423,14 @@ async function handleDeleteAddress(index) {
 
 function createModal(title, content) {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'owner-modal-overlay';
     modal.innerHTML = `
-        <div class="modal">
-            <div class="modal-header">
+        <div class="owner-modal">
+            <div class="owner-modal-header">
                 <h3>${title}</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <button class="owner-modal-close" onclick="closeModal()">×</button>
             </div>
-            <div class="modal-body">
+            <div class="owner-modal-body">
                 ${content}
             </div>
         </div>
@@ -1137,7 +1441,7 @@ function createModal(title, content) {
 }
 
 function closeModal() {
-    const modal = document.querySelector('.modal-overlay');
+    const modal = document.querySelector('.owner-modal-overlay');
     if (modal) {
         modal.remove();
     }

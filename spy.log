@@ -1,0 +1,10 @@
+1762495164352|0|statement|connection 700|url jdbc:h2:mem:devdb|SHUTDOWN|SHUTDOWN
+1762495164399|0|rollback|connection 702|url jdbc:h2:mem:devdb||
+1762495164400|0|commit|connection 703|url jdbc:h2:mem:devdb||
+1762495164400|0|commit|connection 704|url jdbc:h2:mem:devdb||
+1762495164401|0|commit|connection 705|url jdbc:h2:mem:devdb||
+1762495164497|0|rollback|connection 706|url jdbc:h2:mem:devdb||
+1762495164499|0|commit|connection 707|url jdbc:h2:mem:devdb||
+1762495164505|0|commit|connection 709|url jdbc:h2:mem:devdb||
+1762495164505|0|commit|connection 708|url jdbc:h2:mem:devdb||
+1762495164538|0|statement|connection 710|url jdbc:h2:mem:devdb|SHUTDOWN|SHUTDOWN

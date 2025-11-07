@@ -38,11 +38,11 @@ public class SecurityConfig {
 				.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // 브라우저가 <iframe>에 페이지를 로드할 수 있는지를 결정하는 헤더 (h2 콘솔 접속용)
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 				.authorizeHttpRequests(auth -> {
-					auth.requestMatchers("/v1/auth/**", "/h2-console/**", "/view/**","/","/static/**", "/css/**", "/js/**").permitAll();
+					auth.requestMatchers("/v1/auth/**", "/h2-console/**", "/view/**","/","/static/**", "/css/**", "/js/**","/favicon.ico").permitAll();
 					auth.requestMatchers("/v1/customers/**").hasRole("CUSTOMER");
 					auth.requestMatchers("/v1/owners/**").hasRole("OWNER");
 					auth.requestMatchers("/v1/admin/**").hasAnyRole("MASTER", "MANAGER");
-					auth.requestMatchers("/v1/role-promotions", "v1/users/**").hasAnyRole("CUSTOMER", "MASTER", "MANAGER");
+					auth.requestMatchers("/v1/role-promotions", "v1/users/**","v1/users").hasAnyRole("CUSTOMER", "MASTER", "MANAGER", "OWNER");
 					auth.anyRequest().authenticated();
 				})
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -222,10 +222,10 @@ public class OrderRepositoryImpl implements OrderRepository {
                         orderEntity.status.eq(status),
                         isNotDeleted()
                 )
-                .distinct()
+                .groupBy(orderEntity.id)
+                .orderBy(orderEntity.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(getOrderSpecifiers(pageable.getSort()))
                 .fetch();
 
         // 2. ID로 fetch join

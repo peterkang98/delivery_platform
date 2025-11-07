@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.global.infrastructure.email;
+package xyz.sparta_project.manjok.global.infrastructure.event.dto;
 
 import lombok.Getter;
 

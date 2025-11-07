@@ -28,4 +28,9 @@ public class ClientController {
 //                .map(role -> "ROLE_CUSTOMER")
 //                .orElse("redirect:/view/client/login");
     }
+
+    @GetMapping("/view/client/reset")
+    public String passwordReset() {
+        return "password-reset";
+    }
 }

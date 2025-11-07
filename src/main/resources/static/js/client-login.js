@@ -71,6 +71,28 @@ async function signup(username, password, confirmPassword, email) {
     }
 }
 
+// 비밀번호 찾기 API
+async function requestPasswordReset(email) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/password-reset`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || "비밀번호 찾기 요청 실패");
+        }
+
+        const result = await response.json();
+        return { success: true, data: result };
+    } catch (error) {
+        console.error("비밀번호 찾기 오류:", error);
+        return { success: false, message: error.message };
+    }
+}
+
 function validateData() {
 
 }
@@ -123,13 +145,13 @@ function renderLoginPage() {
     // 회원가입 링크
     document.getElementById("signupLink").addEventListener("click", renderSignupPage);
 
-    // 아이디/비밀번호 찾기 (임시)
+    // 아이디 찾기 (임시)
     document.getElementById("findIdLink").addEventListener("click", () => {
         alert("아이디 찾기 기능은 준비중입니다.");
     });
-    document.getElementById("findPwLink").addEventListener("click", () => {
-        alert("비밀번호 찾기 기능은 준비중입니다.");
-    });
+
+    // 비밀번호 찾기
+    document.getElementById("findPwLink").addEventListener("click", renderPasswordResetRequestPage);
 }
 
 // 회원가입 화면 렌더링
@@ -224,6 +246,95 @@ function renderSignupPage() {
 
     // 로그인으로 돌아가기
     document.getElementById("backToLogin").addEventListener("click", renderLoginPage);
+}
+
+// 비밀번호 찾기 요청 화면
+function renderPasswordResetRequestPage() {
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>배달의 만족</h1>
+                <h2>비밀번호 찾기</h2>
+            </div>
+            <div class="auth-form">
+                <div class="form-group">
+                    <label>이메일</label>
+                    <input type="email" id="resetEmail" placeholder="가입하신 이메일을 입력해주세요" />
+                    <div class="error-message" id="emailError"></div>
+                    <p class="help-text">입력하신 이메일로 비밀번호 재설정 링크를 보내드립니다.</p>
+                </div>
+                <button class="btn-signup-main" id="sendResetBtn">인증 이메일 보내기</button>
+                <div class="auth-links">
+                    <a id="backToLogin">로그인으로 돌아가기</a>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 이메일 전송 버튼 이벤트
+    document.getElementById("sendResetBtn").addEventListener("click", async () => {
+        const email = document.getElementById("resetEmail").value.trim();
+
+        // 에러 메시지 초기화
+        document.getElementById("emailError").textContent = "";
+        document.getElementById("emailError").classList.remove("show");
+
+        // 유효성 검사
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            document.getElementById("emailError").textContent = "올바른 이메일을 입력해주세요.";
+            document.getElementById("emailError").classList.add("show");
+            return;
+        }
+
+        // 비밀번호 찾기 API 호출
+        const result = await requestPasswordReset(email);
+
+        if (result.success) {
+            renderPasswordResetEmailSent(email);
+        } else {
+            alert(result.message || "비밀번호 찾기 요청에 실패했습니다.");
+        }
+    });
+
+    // Enter 키 이벤트
+    document.getElementById("resetEmail").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") document.getElementById("sendResetBtn").click();
+    });
+
+    // 로그인으로 돌아가기
+    document.getElementById("backToLogin").addEventListener("click", renderLoginPage);
+}
+
+// 비밀번호 찾기 이메일 전송 완료 화면
+function renderPasswordResetEmailSent(email) {
+    const app = document.getElementById("app");
+    app.innerHTML = `
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>배달의 만족</h1>
+                <h2>비밀번호 찾기</h2>
+            </div>
+            <div class="auth-form">
+                <div class="success-message">
+                    <h3>📧 이메일이 전송되었습니다!</h3>
+                    <p>
+                        <strong>${email}</strong>로<br/>
+                        비밀번호 재설정 링크가 발송되었습니다.<br/><br/>
+                        이메일을 확인하여<br/>
+                        비밀번호를 재설정해주세요.
+                    </p>
+                    <p class="help-text">
+                        이메일이 오지 않았다면<br/>
+                        스팸 메일함을 확인해주세요.
+                    </p>
+                    <button class="btn-back-login" id="toLoginBtn">로그인 하기</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("toLoginBtn").addEventListener("click", renderLoginPage);
 }
 
 // 회원가입 성공 화면

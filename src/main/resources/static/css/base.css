@@ -409,3 +409,10 @@ body {
     background: #e74c3c;
     color: white;
 }
+/* 도움말 텍스트 */
+.help-text {
+    font-size: 13px;
+    color: #999;
+    margin-top: 8px;
+    line-height: 1.5;
+}
