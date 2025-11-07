@@ -1,28 +1,32 @@
-.layout {
-    display: grid;
-    grid-template-columns: 300px auto;
-    grid-template-rows: 120px auto;
-    height: 100vh;
+/* 클라이언트 페이지 - 녹색 그라데이션 */
+body:has(.auth-card) {
+    background: linear-gradient(to bottom, #10b981, #dcfce7);
 }
 
+/* 메인 레이아웃 배경 */
+body:has(.main-layout) {
+    background: #f5f6fa;
+}
+
+/* 로그인 버튼 색상 */
+.btn-login {
+    background: #10b981;
+}
+
+.btn-signup-main {
+    background: #10b981;
+}
+
+.btn-back-login {
+    background: #10b981;
+}
+
+/* 사이드바 테마 */
 .sidebar {
-    background: #222;
-    color: #fff;
+    background: linear-gradient(180deg, #059669 0%, #047857 100%);
 }
 
-.sidebar.expanded {
-    width: 300px;
-}
-
-.sidebar.collapsed {
-    width: 50px;
-}
-
-.header {
-    background: #f1f1f1;
-    height: 500px;
-}
-
-.content {
-    padding: 20px;
+/* 버튼 테마 */
+.btn-primary {
+    background: #10b981;
 }

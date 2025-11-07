@@ -1,0 +1,31 @@
+/* 오너 페이지 - 파란색 그라데이션 */
+body:has(.auth-card) {
+    background: linear-gradient(to bottom, #3b82f6, #dbeafe);
+}
+
+/* 메인 레이아웃 배경 */
+body:has(.main-layout) {
+    background: #f5f6fa;
+}
+
+.btn-login {
+    background: #3b82f6;
+}
+
+.btn-signup-main {
+    background: #3b82f6;
+}
+
+.btn-back-login {
+    background: #3b82f6;
+}
+
+/* 사이드바 테마 */
+.sidebar {
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* 버튼 테마 */
+.btn-primary {
+    background: #3b82f6;
+}

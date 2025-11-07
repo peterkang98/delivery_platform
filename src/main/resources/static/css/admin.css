@@ -1,0 +1,31 @@
+/* 어드민 페이지 - 노란색 그라데이션 */
+body:has(.auth-card) {
+    background: linear-gradient(to bottom, #f59e0b, #fef3c7);
+}
+
+/* 메인 레이아웃 배경 */
+body:has(.main-layout) {
+    background: #f5f6fa;
+}
+
+.btn-login {
+    background: #f59e0b;
+}
+
+.btn-signup-main {
+    background: #f59e0b;
+}
+
+.btn-back-login {
+    background: #f59e0b;
+}
+
+/* 사이드바 테마 */
+.sidebar {
+    background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+}
+
+/* 버튼 테마 */
+.btn-primary {
+    background: #f59e0b;
+}
