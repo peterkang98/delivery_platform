@@ -11,10 +11,7 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEx
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Menu Aggregate Root
@@ -184,7 +181,7 @@ public class Menu {
                                           Boolean isRequired, Integer minSelection,
                                           Integer maxSelection, String createdBy) {
         MenuOptionGroup optionGroup = MenuOptionGroup.builder()
-                .id(null)  // ID는 나중에 생성
+                .id("OPG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .createdAt(LocalDateTime.now())
                 .menuId(this.id)
                 .restaurantId(this.restaurantId)

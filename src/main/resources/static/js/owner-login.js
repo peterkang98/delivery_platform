@@ -61,8 +61,8 @@ function renderLoginPage() {
             <div class="auth-form">
                 <div class="input-with-button">
                     <div class="input-group">
-                        <input type="text" id="email" placeholder="이메일" />
-                        <input type="password" id="password" placeholder="비밀번호" />
+                        <input type="text" id="email" placeholder="이메일" value="testOwner1@test.com" />
+                        <input type="password" id="password" placeholder="비밀번호" value="Qwer1234!" />
                     </div>
                     <button class="btn-login" id="loginBtn">로그인</button>
                 </div>

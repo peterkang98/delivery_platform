@@ -53,6 +53,15 @@ public class CustomerOrderController {
 
         // DTO → 도메인 변환
         Orderer orderer = mapper.toOrderer(request.getOrderer());
+
+        orderer = Orderer.create(
+                userId,
+                orderer.getName(),
+                orderer.getPhone(),
+                orderer.getAddress(),
+                orderer.getDeliveryRequest()
+        );
+
         List<OrderItem> items = request.getItems().stream()
                 .map(mapper::toOrderItem)
                 .collect(Collectors.toList());

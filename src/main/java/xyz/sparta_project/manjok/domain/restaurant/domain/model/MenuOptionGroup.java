@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * MenuOptionGroup Entity
@@ -75,7 +76,7 @@ public class MenuOptionGroup {
     public MenuOption addOption(String optionName, Integer additionalPrice,
                                 Integer displayOrder, String createdBy) {
         MenuOption option = MenuOption.builder()
-                .id(null)  // ID는 나중에 생성
+                .id("OPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .createdAt(LocalDateTime.now())
                 .optionGroupId(this.id)
                 .menuId(this.menuId)

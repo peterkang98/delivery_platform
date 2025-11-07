@@ -792,7 +792,7 @@ function showPaymentResult(result) {
     if (result.success) {
         modalBody.innerHTML = `
             <div style="border:1px solid #10b981; padding:20px; border-radius:8px; background:#f0fdf4;">
-                <h3 style="color:#10b981; margin-bottom:15px;">✅ 결제 완료</h3>
+                <h3 style="color:#10b981; margin-bottom:15px;">결제 완료</h3>
                 <p><strong>결제 금액:</strong> ${result.amount}원</p>
                 <p><strong>주문번호:</strong> ${result.orderId}</p>
                 <p><strong>paymentKey:</strong> ${result.paymentKey}</p>
