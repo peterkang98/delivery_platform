@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.user.infrastructure.email.exception;
+package xyz.sparta_project.manjok.global.infrastructure.email.exception;
 
 import xyz.sparta_project.manjok.global.presentation.exception.ErrorCode;
 import xyz.sparta_project.manjok.global.presentation.exception.GlobalException;
