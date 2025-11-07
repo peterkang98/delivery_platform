@@ -66,15 +66,4 @@ jobs:
             echo "이미지 Pull"
             sudo docker pull ${{ env.IMAGE_URI }}
 
-            sudo docker run -d --name myapp --network manjok-network -p 3000:8080 \
-            -e DB_URL='${{ secrets.DB_URL }}' \
-            -e DB_USERNAME='${{ secrets.DB_USERNAME }}' \ 
-            -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' \
-            -e JWT_ENC_KEY='${{ secrets.JWT_ENC_KEY }}' \
-            -e EMAIL='${{ secrets.EMAIL }}' \
-            -e EMAIL_PW='${{ secrets.EMAIL_PW }}' \
-            -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' \
-            -e TOSS='${{ secrets.TOSS }}' \
-            -e BASE_URL='${{ secrets.BASE_URL }}' \
-            -e DB_DDL_AUTO=update \
-            '${{ env.IMAGE_URI }}'
+            sudo docker run -d --name myapp --network manjok-network -p 3000:8080 -e DB_URL='${{ secrets.DB_URL }}' -e DB_USERNAME='${{ secrets.DB_USERNAME }}' -e DB_PASSWORD='${{ secrets.DB_PASSWORD }}' -e JWT_ENC_KEY='${{ secrets.JWT_ENC_KEY }}' -e EMAIL='${{ secrets.EMAIL }}' -e EMAIL_PW='${{ secrets.EMAIL_PW }}' -e GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}' -e TOSS='${{ secrets.TOSS }}' -e BASE_URL='${{ secrets.BASE_URL }}' -e DDL_AUTO=update ${{ env.IMAGE_URI }}
