@@ -13,7 +13,7 @@ import java.util.Objects;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAddress {
-	@Column(length=100, nullable = false)
+	@Column(length=100)
 	private String address;
 	private double lat;
 	private double lon;
