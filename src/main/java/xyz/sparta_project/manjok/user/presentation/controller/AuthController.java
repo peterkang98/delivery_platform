@@ -1,5 +1,6 @@
 package xyz.sparta_project.manjok.user.presentation.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import xyz.sparta_project.manjok.user.presentation.dto.SignupRequest;
 import xyz.sparta_project.manjok.user.presentation.validator.PasswordResetValidator;
 import xyz.sparta_project.manjok.user.presentation.validator.SignupValidator;
 
+@Tag(name = "회원 인증 API", description = "회원 정보 조회, 등록, 수정, 삭제 기능 제공")
 @RequestMapping("/v1/auth")
 @Controller
 @RequiredArgsConstructor
