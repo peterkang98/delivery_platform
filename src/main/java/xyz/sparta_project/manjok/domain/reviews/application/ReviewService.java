@@ -36,7 +36,7 @@ public class ReviewService {
 	}
 
 	// 회원 기준으로 리뷰 CRUD
-	public ApiResponse<?> createReview(String reviewerId, String orderId, String restaurantId, List<Menu> menus,double rating, String content) {
+	public ApiResponse<?> createReview(String reviewerId, String orderId, String restaurantId, List<Menu> menus, double rating, String content) {
 		Review review = Review.builder()
 							  .orderId(orderId)
 							  .reviewerId(reviewerId)

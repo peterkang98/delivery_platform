@@ -41,6 +41,7 @@ public class ReviewController {
 				request.orderId(),
 				request.restaurantId(),
 				request.menus(),
+				request.rating(),
 				request.content()
 		);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
