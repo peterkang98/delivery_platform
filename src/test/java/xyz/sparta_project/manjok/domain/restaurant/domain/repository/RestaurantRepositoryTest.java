@@ -44,7 +44,7 @@ class RestaurantRepositoryTest {
     private RestaurantCategory savedCategory;
 
     // 기본 정보
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "홍길동";
     private final String RESTAURANT_NAME = "테스트 레스토랑";
     private final String CREATED_BY = "test-user";
@@ -701,7 +701,7 @@ class RestaurantRepositoryTest {
     @DisplayName("Restaurant 중복 확인 - 존재하지 않음")
     void existsByOwnerIdAndName_False() {
         // when
-        boolean exists = restaurantRepository.existsByOwnerIdAndName(999L, "존재하지 않는 레스토랑");
+        boolean exists = restaurantRepository.existsByOwnerIdAndName("999L", "존재하지 않는 레스토랑");
 
         // then
         assertThat(exists).isFalse();

@@ -466,7 +466,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public Page<Restaurant> findByOwnerId(Long ownerId, Pageable pageable) {
+    public Page<Restaurant> findByOwnerId(String ownerId, Pageable pageable) {
         if (ownerId == null) {
             throw new RestaurantException(RestaurantErrorCode.OWNER_REQUIRED);
         }
@@ -483,7 +483,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
      * - 기본 정보만 조회 (성능 최적화)
      * - 연관 엔티티는 필요시 개별 로딩
      */
-    private Page<Restaurant> findAllInternal(Long ownerId, boolean includeDeleted, Pageable pageable) {
+    private Page<Restaurant> findAllInternal(String ownerId, boolean includeDeleted, Pageable pageable) {
         try {
             // 조건 구성
             BooleanExpression condition = null;
@@ -912,7 +912,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public boolean existsByOwnerIdAndName(Long ownerId, String restaurantName) {
+    public boolean existsByOwnerIdAndName(String ownerId, String restaurantName) {
         try {
             if (ownerId == null || restaurantName == null || restaurantName.isBlank()) {
                 return false;

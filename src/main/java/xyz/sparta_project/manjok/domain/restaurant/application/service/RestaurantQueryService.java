@@ -12,10 +12,10 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.model.Restaurant;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantCategory;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
 import xyz.sparta_project.manjok.global.common.utils.PageUtils;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 
@@ -112,7 +112,7 @@ public class RestaurantQueryService {
      * - Owner가 소유한 식당 목록
      * - 삭제된 것도 조회 가능
      */
-    public PageResponse<RestaurantResponse> getRestaurantsByOwnerId(Long ownerId, Pageable pageable) {
+    public PageResponse<RestaurantResponse> getRestaurantsByOwnerId(String ownerId, Pageable pageable) {
         log.info("Owner 식당 목록 조회 - ownerId: {}", ownerId);
 
         Page<Restaurant> restaurantPage = restaurantRepository.findByOwnerId(ownerId, pageable);

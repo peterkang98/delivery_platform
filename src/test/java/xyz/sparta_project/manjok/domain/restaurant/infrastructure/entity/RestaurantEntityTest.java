@@ -35,7 +35,7 @@ class RestaurantEntityTest {
         Restaurant domain = Restaurant.builder()
                 .id("REST123")
                 .createdAt(LocalDateTime.of(2024, 1, 1, 10, 0))
-                .ownerId(1L)
+                .ownerId("1")
                 .ownerName("홍길동")
                 .restaurantName("맛있는 식당")
                 .status(RestaurantStatus.OPEN)
@@ -54,7 +54,7 @@ class RestaurantEntityTest {
         // then
         assertThat(entity).isNotNull();
         assertThat(entity.getId()).isEqualTo("REST123");
-        assertThat(entity.getOwnerId()).isEqualTo(1L);
+        assertThat(entity.getOwnerId()).isEqualTo("1");
         assertThat(entity.getOwnerName()).isEqualTo("홍길동");
         assertThat(entity.getRestaurantName()).isEqualTo("맛있는 식당");
         assertThat(entity.getStatus()).isEqualTo(RestaurantStatus.OPEN);
@@ -84,7 +84,7 @@ class RestaurantEntityTest {
     void toDomain_ShouldConvertEntityToRestaurant() {
         // given
         RestaurantEntity entity = RestaurantEntity.builder()
-                .ownerId(2L)
+                .ownerId("1")
                 .ownerName("김철수")
                 .restaurantName("즐거운 식당")
                 .status(RestaurantStatus.CLOSED)
@@ -103,7 +103,7 @@ class RestaurantEntityTest {
 
         // then
         assertThat(domain).isNotNull();
-        assertThat(domain.getOwnerId()).isEqualTo(2L);
+        assertThat(domain.getOwnerId()).isEqualTo("1");
         assertThat(domain.getOwnerName()).isEqualTo("김철수");
         assertThat(domain.getRestaurantName()).isEqualTo("즐거운 식당");
         assertThat(domain.getStatus()).isEqualTo(RestaurantStatus.CLOSED);
@@ -155,7 +155,7 @@ class RestaurantEntityTest {
 
         Restaurant domain = Restaurant.builder()
                 .id("REST456")
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("맛있는 식당")
                 .status(RestaurantStatus.OPEN)
                 .address(address)
@@ -196,7 +196,7 @@ class RestaurantEntityTest {
     void addMenu_ShouldSetBidirectionalRelation() {
         // given
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();
@@ -229,7 +229,7 @@ class RestaurantEntityTest {
     void addMenuCategory_ShouldSetBidirectionalRelation() {
         // given
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();
@@ -262,7 +262,7 @@ class RestaurantEntityTest {
     void addOperatingDay_ShouldSetBidirectionalRelation() {
         // given
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();
@@ -299,7 +299,7 @@ class RestaurantEntityTest {
     void removeRelations_ShouldWork() {
         // given
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();

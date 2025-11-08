@@ -12,11 +12,11 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantCatego
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantStatus;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantUpdateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantCreateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.AdminRestaurantUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.RestaurantCreateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.RestaurantUpdateRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -44,7 +44,7 @@ class RestaurantCommandServiceTest {
     private RestaurantCategory testCategory;
     private RestaurantCategory japaneseCategory;  // 일식 카테고리 추가
     private RestaurantCreateRequest createRequest;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "홍길동";
 
     @BeforeEach

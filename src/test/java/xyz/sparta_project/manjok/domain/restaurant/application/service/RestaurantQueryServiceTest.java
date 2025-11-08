@@ -13,10 +13,10 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEx
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ class RestaurantQueryServiceTest {
 
     private Restaurant testRestaurant;
     private RestaurantCategory testCategory;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "홍길동";
 
     @BeforeEach
@@ -310,7 +310,7 @@ class RestaurantQueryServiceTest {
         Restaurant noCategoryRestaurant = Restaurant.builder()
                 .id(UUID.randomUUID().toString())
                 .createdAt(LocalDateTime.now())
-                .ownerId(2L)
+                .ownerId("2")
                 .ownerName("김철수")
                 .restaurantName("카테고리없는식당")
                 .status(RestaurantStatus.OPEN)

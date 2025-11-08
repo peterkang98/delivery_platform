@@ -12,10 +12,10 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEx
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.Menu;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.Restaurant;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminMenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.MenuResponse;
 import xyz.sparta_project.manjok.global.common.utils.PageUtils;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 

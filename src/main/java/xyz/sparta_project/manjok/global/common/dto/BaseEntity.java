@@ -41,9 +41,8 @@ public abstract class BaseEntity {
     /**
      * 생성 시간 (서버 시간 기준)
      * */
-	@CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
     
     /**
      * UUID 재생성 전략

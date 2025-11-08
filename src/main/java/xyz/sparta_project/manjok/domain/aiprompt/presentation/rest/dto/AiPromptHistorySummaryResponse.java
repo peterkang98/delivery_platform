@@ -21,8 +21,8 @@ public class AiPromptHistorySummaryResponse {
     private String id;
     private PromptType promptType;
     private String promptTypeName;
-    private String requestPromptPreview;  // 앞 100자만
-    private String responseContentPreview;  // 앞 200자만
+    private String requestPrompt;
+    private String responseContent;
     private Boolean hasResponse;
     private LocalDateTime createdAt;
 
@@ -34,8 +34,8 @@ public class AiPromptHistorySummaryResponse {
                 .id(domain.getId())
                 .promptType(domain.getPromptType())
                 .promptTypeName(domain.getPromptType().getDisplayName())
-                .requestPromptPreview(getPreview(domain.getRequestPrompt(), 100))
-                .responseContentPreview(getPreview(domain.getResponseContent(), 200))
+                .requestPrompt(getPreview(domain.getRequestPrompt(), 100))
+                .responseContent(getPreview(domain.getResponseContent(), 200))
                 .hasResponse(domain.hasResponse())
                 .createdAt(domain.getCreatedAt())
                 .build();

@@ -1,4 +1,4 @@
-package xyz.sparta_project.manjok.domain.restaurant.infrastructure.repository;
+package xyz.sparta_project.manjok.domain.restaurant.domain.repository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.RestaurantCategory;
-import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantCategoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

@@ -37,7 +37,7 @@ public class User extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.CUSTOMER;
 
-	@ElementCollection(fetch = FetchType.LAZY)
+	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(name="p_user_address", joinColumns = @JoinColumn(name="user_id"))
 	@OrderColumn(name="address_idx")
 	private List<UserAddress> addresses;

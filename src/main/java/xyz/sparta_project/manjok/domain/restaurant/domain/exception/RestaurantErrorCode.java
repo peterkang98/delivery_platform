@@ -35,6 +35,9 @@ public enum RestaurantErrorCode implements ErrorCode {
 
     // Category 관련 에러 (RESTAURANT_040~049)
     CATEGORY_NOT_FOUND("RESTAURANT_040", "카테고리를 찾을 수 없습니다.", 404),
+    CATEGORY_NOT_AVAILABLE("RESTAURANT_041", "사용할 수 없는 카테고리입니다.", 400),
+    CATEGORY_ALREADY_EXISTS("RESTAURANT_042", "이미 존재하는 카테고리입니다.", 409),
+    INVALID_CATEGORY_DEPTH("RESTAURANT_043", "유효하지 않은 카테고리 계층입니다.", 400),
 
     // Event 처리 에러 (RESTAURANT_050~059)
     EVENT_PROCESSING_FAILED("RESTAURANT_050", "이벤트 처리 중 오류가 발생했습니다.", 500),

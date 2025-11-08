@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventLog;
 import xyz.sparta_project.manjok.global.infrastructure.event.domain.EventStatus;
+import xyz.sparta_project.manjok.global.infrastructure.event.dto.TestEvent;
 import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandlerProcessor;
 import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandlerRegistry;
 import xyz.sparta_project.manjok.global.infrastructure.event.repository.EventLogRepository;
@@ -188,24 +189,5 @@ class EventConsumerTest {
         // then
         verify(mockHandler, never()).handle(any());
         assertThat(eventLog.getStatus()).isEqualTo(EventStatus.FAILED);
-    }
-
-    // 테스트용 이벤트 클래스
-    private static class TestEvent {
-        private String data;
-
-        public TestEvent() {}
-
-        public TestEvent(String data) {
-            this.data = data;
-        }
-
-        public String getData() {
-            return data;
-        }
-
-        public void setData(String data) {
-            this.data = data;
-        }
     }
 }

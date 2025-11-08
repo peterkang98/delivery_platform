@@ -16,10 +16,10 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEr
 import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantException;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.MenuSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminMenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.MenuSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.MenuResponse;
 import xyz.sparta_project.manjok.global.presentation.dto.PageResponse;
 
 import java.math.BigDecimal;
@@ -57,7 +57,7 @@ class MenuQueryServiceTest {
     private Menu hiddenMenu;
     private Menu deletedMenu;
 
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String CREATED_BY = "test-owner";
 
     @BeforeEach

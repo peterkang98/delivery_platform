@@ -13,11 +13,11 @@ import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantEr
 import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantException;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
 import xyz.sparta_project.manjok.domain.restaurant.domain.repository.RestaurantRepository;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminMenuUpdateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuCreateRequest;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.MenuUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminMenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.request.AdminMenuUpdateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.MenuCreateRequest;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.MenuResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.request.MenuUpdateRequest;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -47,7 +47,7 @@ class MenuCommandServiceTest {
     // 테스트 데이터
     private Restaurant testRestaurant;
     private MenuCategory testCategory;
-    private final Long OWNER_ID = 1L;
+    private final String OWNER_ID = "1";
     private final String OWNER_NAME = "테스트 사장님";
     private final String CREATED_BY = "test-owner";
     private final String UPDATED_BY = "test-updater";

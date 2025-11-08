@@ -3,6 +3,7 @@ package xyz.sparta_project.manjok.global.infrastructure.email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import xyz.sparta_project.manjok.global.infrastructure.email.exception.EmailException;
+import xyz.sparta_project.manjok.global.infrastructure.event.dto.EmailSentEvent;
 import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandler;
 import xyz.sparta_project.manjok.global.infrastructure.event.handler.EventHandlerProcessor;
 

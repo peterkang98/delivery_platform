@@ -56,7 +56,7 @@ class MenuCategoryEntityTest {
         // given
         // Restaurant 엔티티 생성 (연관관계 설정을 위해)
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();
@@ -94,7 +94,7 @@ class MenuCategoryEntityTest {
     void addMenuCategory_ShouldSetBidirectionalRelation() {
         // given
         RestaurantEntity restaurant = RestaurantEntity.builder()
-                .ownerId(1L)
+                .ownerId("1")
                 .restaurantName("테스트 레스토랑")
                 .isActive(true)
                 .build();

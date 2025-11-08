@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import xyz.sparta_project.manjok.domain.restaurant.domain.event.ReviewCreatedEvent;
+import xyz.sparta_project.manjok.global.infrastructure.event.dto.ReviewCreatedEvent;
 import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantErrorCode;
 import xyz.sparta_project.manjok.domain.restaurant.domain.exception.RestaurantException;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.Restaurant;

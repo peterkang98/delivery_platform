@@ -1,0 +1,1190 @@
+// ============ 전역 변수 및 설정 ============
+const urlParams = new URLSearchParams(window.location.search);
+const API_BASE_URL = '/v1';
+
+let currentMenu = 'restaurant';
+let selectedRestaurant = null;
+let cart = []; // 장바구니
+
+// ============ 유틸리티 함수 ============
+function getRoleTypeFromPath() {
+    const path = window.location.pathname;
+    if (path.includes('/client')) return 'CLIENT';
+    if (path.includes('/owner')) return 'OWNER';
+    if (path.includes('/admin')) return 'ADMIN';
+    return null;
+}
+
+function getTokenKey() {
+    return `authToken_${getRoleTypeFromPath()}`;
+}
+
+function getToken() {
+    return localStorage.getItem(getTokenKey());
+}
+
+function removeToken() {
+    localStorage.removeItem(getTokenKey());
+}
+
+function logout() {
+    removeToken();
+    window.location.href = "/view/client/login";
+}
+
+// API 요청 헬퍼
+async function fetchAPI(url, options = {}) {
+    const token = getToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
+        ...options.headers
+    };
+
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'API 요청 실패' }));
+        throw new Error(error.message || 'API 요청 실패');
+    }
+
+    return response.json();
+}
+
+// ============ 메뉴 정의 ============
+const MENU_ITEMS = [
+    { id: 'restaurant', label: '식당' },
+    { id: 'wishlist', label: '찜' },
+    { id: 'cart', label: '장바구니' },
+    { id: 'orders', label: '주문정보' },
+    { id: 'profile', label: '사용자 정보' },
+    { id: 'qna', label: 'Q&A' },
+    { id: 'payment', label: '결제 테스트' }
+];
+
+// ============ 메인 레이아웃 ============
+function renderMainLayout() {
+    const app = document.getElementById("app");
+
+    app.innerHTML = `
+        <div class="main-layout">
+            <aside class="sidebar">
+                <div class="user-info">
+                    <h3>고객님</h3>
+                    <p>user@example.com</p>
+                    <button class="logout-btn" onclick="logout()">로그아웃</button>
+                </div>
+                <nav class="nav-menu">
+                    <ul id="menuList"></ul>
+                </nav>
+            </aside>
+            <main class="main-content">
+                <div class="content-header">
+                    <h2 id="contentTitle">식당</h2>
+                    <p id="contentDesc">식당 목록을 확인하세요</p>
+                </div>
+                <div class="content-body" id="contentBody"></div>
+            </main>
+        </div>
+        
+        <!-- 모달들 -->
+        <div class="modal" id="restaurantDetailModal">
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3>식당 상세 정보</h3>
+                    <button class="modal-close" onclick="closeModal('restaurantDetailModal')">&times;</button>
+                </div>
+                <div class="modal-body" id="restaurantDetailBody"></div>
+            </div>
+        </div>
+        
+        <div class="modal" id="paymentModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>결제 정보</h3>
+                    <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="paymentModalBody"></div>
+            </div>
+        </div>
+    `;
+
+    renderMenu();
+    renderContent(currentMenu);
+    checkPaymentCallback();
+}
+
+function renderMenu() {
+    const menuList = document.getElementById('menuList');
+    menuList.innerHTML = MENU_ITEMS.map(item => `
+        <li class="${currentMenu === item.id ? 'active' : ''}" onclick="changeMenu('${item.id}')">
+            ${item.label}
+            ${item.id === 'cart' && cart.length > 0 ? ` (${cart.length})` : ''}
+        </li>
+    `).join('');
+}
+
+function changeMenu(menuId) {
+    currentMenu = menuId;
+    renderMenu();
+    renderContent(menuId);
+}
+
+// ============ 콘텐츠 렌더링 ============
+async function renderContent(menuId) {
+    const contentTitle = document.getElementById('contentTitle');
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    const menuItem = MENU_ITEMS.find(item => item.id === menuId);
+    contentTitle.textContent = menuItem.label;
+
+    try {
+        switch(menuId) {
+            case 'restaurant':
+                await renderRestaurantList();
+                break;
+            case 'wishlist':
+                await renderWishlist();
+                break;
+            case 'cart':
+                renderCart();
+                break;
+            case 'orders':
+                await renderOrders();
+                break;
+            case 'profile':
+                await renderProfile();
+                break;
+            case 'qna':
+                await renderQNA();
+                break;
+            case 'payment':
+                contentDesc.textContent = 'Toss Payments 결제를 테스트하세요';
+                renderPaymentTest();
+                break;
+            default:
+                contentBody.innerHTML = '<p>준비 중입니다...</p>';
+        }
+    } catch (error) {
+        console.error('콘텐츠 렌더링 오류:', error);
+        contentBody.innerHTML = `<p style="color: red;">오류가 발생했습니다: ${error.message}</p>`;
+    }
+}
+
+// ============ 사용자 정보 페이지 ============
+async function renderProfile() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '내 정보를 확인하세요';
+
+    if (!currentUser) {
+        await loadUserInfo();
+    }
+
+    if (!currentUser) {
+        contentBody.innerHTML = '<p>사용자 정보를 불러올 수 없습니다.</p>';
+        return;
+    }
+
+    contentBody.innerHTML = `
+        <div style="max-width: 600px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h3 style="margin: 0 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+                    기본 정보
+                </h3>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 5px;">아이디</label>
+                    <p style="margin: 0; font-size: 16px; font-weight: 500;">${currentUser.username}</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; color: #666; font-size: 14px; margin-bottom: 5px;">이메일</label>
+                    <p style="margin: 0; font-size: 16px; font-weight: 500;">${currentUser.email}</p>
+                </div>
+                
+                <h3 style="margin: 30px 0 20px 0; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0;">
+                    배송지 주소
+                </h3>
+                
+                ${currentUser.addresses && currentUser.addresses.length > 0 ? `
+                    <div style="display: grid; gap: 15px;">
+                        ${currentUser.addresses.map((addr, index) => `
+                            <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div style="flex: 1;">
+                                        <p style="margin: 0 0 5px 0; font-weight: 500;">주소 ${index + 1}</p>
+                                        <p style="margin: 0; color: #666; font-size: 15px;">${addr.address}</p>
+                                        <p style="margin: 5px 0 0 0; color: #999; font-size: 13px;">
+                                            위도: ${addr.lat.toFixed(6)}, 경도: ${addr.lon.toFixed(6)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p style="color: #999;">등록된 배송지가 없습니다.</p>'}
+                
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button class="btn btn-primary">정보 수정</button>
+                    <button class="btn">주소 추가</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============ Q&A 페이지 (AI 챗봇 - 히스토리 기반) ============
+async function renderQNA() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = 'AI에게 궁금한 점을 물어보세요';
+
+    contentBody.innerHTML = `
+        <div style="max-width: 800px; height: 600px; display: flex; flex-direction: column; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <!-- 채팅 헤더 -->
+            <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px 12px 0 0; color: white;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 24px;">🤖</span>
+                    <span>배달의 만족 AI 도우미</span>
+                </h3>
+                <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">무엇이든 물어보세요!</p>
+            </div>
+            
+            <!-- 채팅 메시지 영역 -->
+            <div id="chatMessages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;">
+                <div style="text-align: center; color: #999;">
+                    <p style="font-size: 14px;">대화 내역을 불러오는 중...</p>
+                </div>
+            </div>
+            
+            <!-- 입력 영역 -->
+            <div style="padding: 20px; border-top: 1px solid #e0e0e0;">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." 
+                           style="flex: 1; padding: 12px 16px; border: 1px solid #ddd; border-radius: 24px; font-size: 15px;"
+                           onkeypress="if(event.key === 'Enter') sendQnaMessage()">
+                    <button onclick="sendQnaMessage()" class="btn btn-primary" 
+                            style="padding: 12px 24px; border-radius: 24px; white-space: nowrap;">
+                        전송
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // QnA 히스토리 로드
+    await loadQnaHistory();
+}
+
+// QnA 히스토리 로드
+async function loadQnaHistory() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/customers/aiprompt/my/qnas`);
+        const histories = response.data;
+
+        if (histories.length === 0) {
+            chatMessagesDiv.innerHTML = `
+                <div style="text-align: center; color: #999; margin-top: 50px;">
+                    <p style="font-size: 48px; margin: 0;">💬</p>
+                    <p style="margin: 10px 0 0 0;">대화를 시작해보세요!</p>
+                    <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                        <button onclick="sendSuggestedQnaQuestion('배달 시간은 얼마나 걸리나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            배달 시간은 얼마나 걸리나요?
+                        </button>
+                        <button onclick="sendSuggestedQnaQuestion('결제 방법은 어떤게 있나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            결제 방법은 어떤게 있나요?
+                        </button>
+                        <button onclick="sendSuggestedQnaQuestion('주문 취소는 어떻게 하나요?')" 
+                                style="padding: 10px 20px; background: #f0f0f0; border: none; border-radius: 20px; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#e0e0e0'" onmouseout="this.style.background='#f0f0f0'">
+                            주문 취소는 어떻게 하나요?
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            // 히스토리를 채팅 형식으로 렌더링
+            renderQnaHistories(histories);
+        }
+
+    } catch (error) {
+        console.error('QnA 히스토리 로드 실패:', error);
+        chatMessagesDiv.innerHTML = `
+            <div style="text-align: center; color: #999; margin-top: 50px;">
+                <p style="font-size: 48px; margin: 0;">💬</p>
+                <p style="margin: 10px 0 0 0;">대화를 시작해보세요!</p>
+            </div>
+        `;
+    }
+}
+
+function renderQnaHistories(histories) {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    chatMessagesDiv.innerHTML = histories.map(history => `
+        <!-- 사용자 질문 -->
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; 
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${history.requestPrompt}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date(history.createdAt).toLocaleString()}
+                </span>
+            </div>
+        </div>
+        
+        <!-- AI 응답 -->
+        <div style="display: flex; justify-content: flex-start;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #f0f0f0; color: #333;">
+                <strong style="display: block; margin-bottom: 5px; color: #10b981;">🤖 AI</strong>
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${history.responseContent}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date(history.createdAt).toLocaleString()}
+                </span>
+            </div>
+        </div>
+    `).join('');
+
+    scrollQnaChatToBottom();
+}
+
+// 제안 질문 전송
+function sendSuggestedQnaQuestion(question) {
+    document.getElementById('chatInput').value = question;
+    sendQnaMessage();
+}
+
+// QnA 메시지 전송
+async function sendQnaMessage() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    // 입력 필드 초기화 및 비활성화
+    input.value = '';
+    input.disabled = true;
+
+    // 사용자 메시지 즉시 표시
+    const chatMessagesDiv = document.getElementById('chatMessages');
+
+    // 제안 버튼이 있으면 제거
+    const suggestions = chatMessagesDiv.querySelector('div[style*="text-align: center"]');
+    if (suggestions) {
+        suggestions.remove();
+    }
+
+    chatMessagesDiv.innerHTML += `
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; 
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+                <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${question}</p>
+                <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                    ${new Date().toLocaleTimeString()}
+                </span>
+            </div>
+        </div>
+    `;
+
+    scrollQnaChatToBottom();
+
+    // 타이핑 인디케이터 표시
+    showQnaTypingIndicator();
+
+    try {
+        // QnA API 호출
+        const response = await fetchAPI(`${API_BASE_URL}/customers/aiprompt/qna`, {
+            method: 'POST',
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        const aiResponse = response.data;
+
+        // 타이핑 인디케이터 제거
+        hideQnaTypingIndicator();
+
+        // AI 응답 추가
+        chatMessagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start;">
+                <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #f0f0f0; color: #333;">
+                    <strong style="display: block; margin-bottom: 5px; color: #10b981;">🤖 AI</strong>
+                    <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${aiResponse.responseContent}</p>
+                    <span style="display: block; margin-top: 5px; font-size: 11px; opacity: 0.7;">
+                        ${new Date(aiResponse.createdAt).toLocaleString()}
+                    </span>
+                </div>
+            </div>
+        `;
+
+        scrollQnaChatToBottom();
+
+    } catch (error) {
+        console.error('QnA 전송 오류:', error);
+
+        // 타이핑 인디케이터 제거
+        hideQnaTypingIndicator();
+
+        // 오류 메시지 표시
+        chatMessagesDiv.innerHTML += `
+            <div style="display: flex; justify-content: flex-start;">
+                <div style="max-width: 70%; padding: 12px 16px; border-radius: 16px; background: #fee; color: #c00; border: 1px solid #fcc;">
+                    <p style="margin: 0; line-height: 1.5;">
+                        ❌ 오류가 발생했습니다: ${error.message}
+                    </p>
+                </div>
+            </div>
+        `;
+
+        scrollQnaChatToBottom();
+    }
+
+    // 입력 필드 활성화
+    input.disabled = false;
+    input.focus();
+}
+
+function showQnaTypingIndicator() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.innerHTML += `
+        <div id="qnaTypingIndicator" style="display: flex; justify-content: flex-start;">
+            <div style="padding: 12px 16px; border-radius: 16px; background: #f0f0f0;">
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite 0.2s;"></div>
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: typing 1.4s infinite 0.4s;"></div>
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes typing {
+                0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+                30% { transform: translateY(-10px); opacity: 1; }
+            }
+        </style>
+    `;
+    scrollQnaChatToBottom();
+}
+
+function hideQnaTypingIndicator() {
+    const indicator = document.getElementById('qnaTypingIndicator');
+    if (indicator) {
+        indicator.remove();
+    }
+}
+
+function scrollQnaChatToBottom() {
+    const chatMessagesDiv = document.getElementById('chatMessages');
+    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+}
+// ============ 식당 목록 ============
+async function renderRestaurantList() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '식당 목록을 확인하세요';
+    contentBody.innerHTML = '<p>로딩 중...</p>';
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/common/restaurants?size=20`);
+        const restaurants = response.data.content;
+
+        if (restaurants.length === 0) {
+            contentBody.innerHTML = '<p>등록된 식당이 없습니다.</p>';
+            return;
+        }
+
+        contentBody.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                ${restaurants.map(restaurant => `
+                    <div class="restaurant-card" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; cursor: pointer;" 
+                         onclick="showRestaurantDetail('${restaurant.restaurantId}')">
+                        <h3 style="margin: 0 0 10px 0;">${restaurant.restaurantName}</h3>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0;">
+                            ${restaurant.fullAddress || `${restaurant.province} ${restaurant.city} ${restaurant.district}`}
+                        </p>
+                        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                            ${restaurant.categoryNames ? restaurant.categoryNames.map(cat =>
+            `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${cat}</span>`
+        ).join('') : ''}
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                ${restaurant.reviewRating ? `⭐ ${restaurant.reviewRating} (${restaurant.reviewCount})` : '리뷰 없음'}
+                            </div>
+                            <div style="color: ${restaurant.isOpenNow ? '#10b981' : '#ef4444'};">
+                                ${restaurant.isOpenNow ? '영업중' : '영업종료'}
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #888;">
+                            ❤️ ${restaurant.wishlistCount || 0}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        contentBody.innerHTML = `<p style="color: red;">식당 목록을 불러오는데 실패했습니다: ${error.message}</p>`;
+    }
+}
+
+// ============ 식당 목록 ============
+async function renderRestaurantList() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '식당 목록을 확인하세요';
+    contentBody.innerHTML = '<p>로딩 중...</p>';
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/common/restaurants?size=20`);
+        const restaurants = response.data.content;
+
+        if (restaurants.length === 0) {
+            contentBody.innerHTML = '<p>등록된 식당이 없습니다.</p>';
+            return;
+        }
+
+        contentBody.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                ${restaurants.map(restaurant => `
+                    <div class="restaurant-card" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; cursor: pointer;" 
+                         onclick="showRestaurantDetail('${restaurant.restaurantId}')">
+                        <h3 style="margin: 0 0 10px 0;">${restaurant.restaurantName}</h3>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0;">
+                            ${restaurant.fullAddress || `${restaurant.province} ${restaurant.city} ${restaurant.district}`}
+                        </p>
+                        <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                            ${restaurant.categoryNames ? restaurant.categoryNames.map(cat =>
+            `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${cat}</span>`
+        ).join('') : ''}
+                        </div>
+                        <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                ${restaurant.reviewRating ? `⭐ ${restaurant.reviewRating} (${restaurant.reviewCount})` : '리뷰 없음'}
+                            </div>
+                            <div style="color: ${restaurant.isOpenNow ? '#10b981' : '#ef4444'};">
+                                ${restaurant.isOpenNow ? '영업중' : '영업종료'}
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 13px; color: #888;">
+                            ❤️ ${restaurant.wishlistCount || 0}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        contentBody.innerHTML = `<p style="color: red;">식당 목록을 불러오는데 실패했습니다: ${error.message}</p>`;
+    }
+}
+
+// ============ 식당 상세 정보 ============
+async function showRestaurantDetail(restaurantId) {
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/common/restaurants/${restaurantId}`);
+        const restaurant = response.data;
+
+        // 찜 개수 조회
+        const favoriteCountResponse = await fetchAPI(`${API_BASE_URL}/common/favorites/restaurant/${restaurantId}/count`);
+        const favoriteCount = favoriteCountResponse.data;
+
+        // 찜 여부 확인 (인증된 경우만)
+        let isFavorite = false;
+        if (getToken()) {
+            try {
+                const favoriteCheckResponse = await fetchAPI(`${API_BASE_URL}/customers/favorites/check/restaurant/${restaurantId}`);
+                isFavorite = favoriteCheckResponse.data.isFavorite;
+            } catch (e) {
+                console.log('찜 여부 확인 실패 (로그인 필요)');
+            }
+        }
+
+        selectedRestaurant = restaurant;
+
+        // 메뉴 목록 조회
+        const menuResponse = await fetchAPI(`${API_BASE_URL}/common/restaurants/${restaurantId}/menus?size=50`);
+        const menus = menuResponse.data.content;
+
+        document.getElementById('restaurantDetailBody').innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <h2 style="margin-bottom: 10px;">${restaurant.restaurantName}</h2>
+                <p style="color: #666;">${restaurant.address.fullAddress}</p>
+                <div style="margin-top: 10px;">
+                    <button class="btn btn-primary" onclick="toggleFavorite('${restaurantId}', ${isFavorite})" id="favoriteBtn">
+                        ${isFavorite ? '❤️ 찜 취소' : '🤍 찜하기'} (${favoriteCount})
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <h4>영업 정보</h4>
+                <p>상태: <span style="color: ${restaurant.isOpenNow ? '#10b981' : '#ef4444'};">
+                    ${restaurant.isOpenNow ? '영업중' : '영업종료'}
+                </span></p>
+                <p>연락처: ${restaurant.contactNumber}</p>
+                <p>⭐ ${restaurant.reviewRating || '0'} (리뷰 ${restaurant.reviewCount || 0}개)</p>
+            </div>
+            
+            <h3 style="margin: 20px 0 15px 0;">메뉴</h3>
+            <div style="display: grid; gap: 15px;">
+                ${menus.length > 0 ? menus.map(menu => `
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 5px 0;">${menu.menuName}</h4>
+                            <p style="color: #666; font-size: 14px; margin: 5px 0;">${menu.description || ''}</p>
+                            <p style="font-weight: bold; color: #10b981; margin-top: 10px;">${menu.price.toLocaleString()}원</p>
+                            ${menu.isAvailable === false ? '<span style="color: red; font-size: 12px;">품절</span>' : ''}
+                        </div>
+                        <button class="btn btn-primary" onclick="addToCart('${menu.menuId}', '${menu.menuName}', ${menu.price}, ${menu.isAvailable})"
+                                ${!menu.isAvailable ? 'disabled' : ''}>
+                            담기
+                        </button>
+                    </div>
+                `).join('') : '<p>등록된 메뉴가 없습니다.</p>'}
+            </div>
+        `;
+
+        document.getElementById('restaurantDetailModal').classList.add('show');
+    } catch (error) {
+        alert('식당 정보를 불러오는데 실패했습니다: ' + error.message);
+    }
+}
+
+// ============ 찜하기 토글 ============
+async function toggleFavorite(restaurantId, isFavorite) {
+    if (!getToken()) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    try {
+        if (isFavorite) {
+            // 찜 취소 - 먼저 favoriteId 찾기
+            const favoritesResponse = await fetchAPI(`${API_BASE_URL}/customers/favorites`);
+            const favorite = favoritesResponse.data.find(f => f.restaurantId === restaurantId && f.type === 'RESTAURANT');
+
+            if (favorite) {
+                await fetchAPI(`${API_BASE_URL}/customers/favorites/${favorite.id}`, { method: 'DELETE' });
+                alert('찜이 취소되었습니다.');
+            }
+        } else {
+            // 찜 추가
+            await fetchAPI(`${API_BASE_URL}/customers/favorites`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    type: 'RESTAURANT',
+                    restaurantId: restaurantId
+                })
+            });
+            alert('찜했습니다!');
+        }
+
+        // 모달 다시 로드
+        closeModal('restaurantDetailModal');
+        showRestaurantDetail(restaurantId);
+    } catch (error) {
+        alert('찜하기 처리 중 오류가 발생했습니다: ' + error.message);
+    }
+}
+
+// ============ 장바구니 ============
+function addToCart(menuId, menuName, price, isAvailable) {
+    if (!isAvailable) {
+        alert('품절된 메뉴입니다.');
+        return;
+    }
+
+    const existingItem = cart.find(item => item.menuId === menuId);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            menuId,
+            menuName,
+            basePrice: price,
+            quantity: 1,
+            restaurant: {
+                restaurantId: selectedRestaurant.restaurantId,
+                restaurantName: selectedRestaurant.restaurantName,
+                phone: selectedRestaurant.contactNumber,
+                address: {
+                    province: selectedRestaurant.address.province,
+                    city: selectedRestaurant.address.city,
+                    district: selectedRestaurant.address.district,
+                    detailAddress: selectedRestaurant.address.detailAddress,
+                    coordinate: {
+                        latitude: selectedRestaurant.coordinate.latitude,
+                        longitude: selectedRestaurant.coordinate.longitude
+                    }
+                }
+            }
+        });
+    }
+
+    renderMenu();
+    alert(`${menuName}이(가) 장바구니에 담겼습니다.`);
+}
+
+function renderCart() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '장바구니를 확인하세요';
+
+    if (cart.length === 0) {
+        contentBody.innerHTML = '<p>장바구니가 비어있습니다.</p>';
+        return;
+    }
+
+    const totalPrice = cart.reduce((sum, item) => sum + (item.basePrice * item.quantity), 0);
+
+    contentBody.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            ${cart.map((item, index) => `
+                <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">${item.menuName}</h4>
+                            <p style="color: #666; margin: 5px 0;">${item.basePrice.toLocaleString()}원</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="updateCartQuantity(${index}, -1)" class="btn">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateCartQuantity(${index}, 1)" class="btn">+</button>
+                            <button onclick="removeFromCart(${index})" class="btn btn-danger">삭제</button>
+                        </div>
+                    </div>
+                    <p style="font-weight: bold; margin-top: 10px;">
+                        소계: ${(item.basePrice * item.quantity).toLocaleString()}원
+                    </p>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div style="border-top: 2px solid #333; padding-top: 20px; margin-top: 20px;">
+            <h3>총 금액: ${totalPrice.toLocaleString()}원</h3>
+            <button class="btn btn-primary" onclick="proceedToOrder()" style="width: 100%; margin-top: 20px; padding: 15px; font-size: 16px;">
+                주문하기
+            </button>
+        </div>
+    `;
+}
+
+function updateCartQuantity(index, delta) {
+    cart[index].quantity += delta;
+    if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+    }
+    renderCart();
+    renderMenu();
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    renderCart();
+    renderMenu();
+}
+
+// ============ 주문 처리 ============
+async function proceedToOrder() {
+    if (!getToken()) {
+        alert('로그인이 필요합니다.');
+        return;
+    }
+
+    if (cart.length === 0) {
+        alert('장바구니가 비어있습니다.');
+        return;
+    }
+
+    // 토스 결제 진행
+    alert('결제를 진행합니다.');
+    await initializePaymentForOrder();
+}
+
+async function initializePaymentForOrder() {
+    const clientKey = "test_ck_yZqmkKeP8g4baNqxOKLp3bQRxB9l";
+    const tossPayments = await TossPayments(clientKey);
+
+    let customerKey = localStorage.getItem("customerKey");
+    if (!customerKey) {
+        customerKey = crypto.randomUUID();
+        localStorage.setItem("customerKey", customerKey);
+    }
+
+    const payment = tossPayments.payment({ customerKey });
+
+    const totalAmount = cart.reduce((sum, item) => sum + (item.basePrice * item.quantity), 0);
+    const orderId = generateOrderId();
+
+    // 주문 정보를 sessionStorage에 임시 저장
+    sessionStorage.setItem('pendingOrder', JSON.stringify({
+        orderId,
+        items: cart,
+        totalAmount
+    }));
+
+    try {
+        await payment.requestPayment({
+            method: "CARD",
+            amount: {
+                currency: "KRW",
+                value: totalAmount
+            },
+            orderId: orderId,
+            orderName: `${cart[0].menuName} 외 ${cart.length - 1}건`,
+            customerName: "사용자",
+            successUrl: `${window.location.origin}${window.location.pathname}?orderSuccess=true`,
+            failUrl: `${window.location.origin}${window.location.pathname}?orderFail=true`,
+        });
+    } catch (error) {
+        console.error("결제 오류:", error);
+        alert("결제 요청 중 오류가 발생했습니다.");
+    }
+}
+
+// 결제 완료 후 주문 생성
+async function createOrderAfterPayment(paymentKey, orderId, amount) {
+    const pendingOrder = JSON.parse(sessionStorage.getItem('pendingOrder'));
+
+    if (!pendingOrder) {
+        alert('주문 정보를 찾을 수 없습니다.');
+        return;
+    }
+
+    try {
+        const orderData = {
+            orderer: {
+                userId: "current-user-id", // 실제로는 토큰에서 추출
+                name: "사용자",
+                phone: "010-1234-5678",
+                deliveryRequest: "문 앞에 놓아주세요",
+                address: {
+                    province: "서울특별시",
+                    city: "강남구",
+                    district: "역삼동",
+                    detailAddress: "123-45",
+                    coordinate: {
+                        latitude: 37.5665,
+                        longitude: 126.9780
+                    }
+                }
+            },
+            items: pendingOrder.items,
+            paymentKey: paymentKey
+        };
+
+        const response = await fetchAPI(`${API_BASE_URL}/customers/orders`, {
+            method: 'POST',
+            body: JSON.stringify(orderData)
+        });
+
+        // 주문 성공
+        cart = [];
+        sessionStorage.removeItem('pendingOrder');
+        renderMenu();
+
+        alert('주문이 완료되었습니다!');
+        changeMenu('orders');
+
+    } catch (error) {
+        alert('주문 생성 실패: ' + error.message);
+    }
+}
+
+// ============ 주문 목록 ============
+async function renderOrders() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '주문 내역을 확인하세요';
+    contentBody.innerHTML = '<p>로딩 중...</p>';
+
+    if (!getToken()) {
+        contentBody.innerHTML = '<p>로그인이 필요합니다.</p>';
+        return;
+    }
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/customers/orders?size=20`);
+        const orders = response.content;
+
+        if (orders.length === 0) {
+            contentBody.innerHTML = '<p>주문 내역이 없습니다.</p>';
+            return;
+        }
+
+        contentBody.innerHTML = `
+            <div style="display: grid; gap: 15px;">
+                ${orders.map(order => `
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                            <div>
+                                <h4 style="margin: 0 0 5px 0;">주문번호: ${order.orderId}</h4>
+                                <p style="color: #666; font-size: 14px; margin: 0;">
+                                    ${new Date(order.createdAt).toLocaleString()}
+                                </p>
+                            </div>
+                            <span style="padding: 5px 10px; background: #f0f0f0; border-radius: 4px; font-size: 14px;">
+                                ${getOrderStatusText(order.status)}
+                            </span>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            ${order.items.map(item => `
+                                <div style="margin-bottom: 10px;">
+                                    <p style="margin: 0; font-weight: 500;">${item.menuName} x ${item.quantity}</p>
+                                    <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+                                        ${item.basePrice.toLocaleString()}원
+                                    </p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div style="border-top: 1px solid #e0e0e0; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <p style="font-weight: bold; font-size: 16px; margin: 0;">
+                                총 금액: ${order.totalPrice.toLocaleString()}원
+                            </p>
+                            <button class="btn btn-primary" onclick="showOrderDetail('${order.orderId}')">
+                                상세보기
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        contentBody.innerHTML = `<p style="color: red;">주문 내역을 불러오는데 실패했습니다: ${error.message}</p>`;
+    }
+}
+
+function getOrderStatusText(status) {
+    const statusMap = {
+        'PENDING': '대기중',
+        'PAYMENT_COMPLETED': '결제완료',
+        'CONFIRMED': '접수완료',
+        'PREPARING': '준비중',
+        'DELIVERING': '배달중',
+        'COMPLETED': '완료',
+        'CANCELLED': '취소됨'
+    };
+    return statusMap[status] || status;
+}
+
+async function showOrderDetail(orderId) {
+    try {
+        const orderResponse = await fetchAPI(`${API_BASE_URL}/customers/orders/${orderId}`);
+        const order = orderResponse;
+
+        // 결제 정보 조회
+        let paymentInfo = null;
+        try {
+            const paymentResponse = await fetchAPI(`${API_BASE_URL}/customers/payments/order/${orderId}`);
+            paymentInfo = paymentResponse.data;
+        } catch (e) {
+            console.log('결제 정보 조회 실패');
+        }
+
+        alert(`주문 상세 정보\n\n주문번호: ${order.orderId}\n상태: ${getOrderStatusText(order.status)}\n총 금액: ${order.totalPrice.toLocaleString()}원\n${paymentInfo ? `\n결제 상태: ${paymentInfo.paymentStatus}` : ''}`);
+    } catch (error) {
+        alert('주문 정보를 불러오는데 실패했습니다: ' + error.message);
+    }
+}
+
+// ============ 찜 목록 ============
+async function renderWishlist() {
+    const contentDesc = document.getElementById('contentDesc');
+    const contentBody = document.getElementById('contentBody');
+
+    contentDesc.textContent = '찜한 식당을 확인하세요';
+    contentBody.innerHTML = '<p>로딩 중...</p>';
+
+    if (!getToken()) {
+        contentBody.innerHTML = '<p>로그인이 필요합니다.</p>';
+        return;
+    }
+
+    try {
+        const response = await fetchAPI(`${API_BASE_URL}/customers/favorites`);
+        const favorites = response.data;
+
+        const restaurantFavorites = favorites.filter(f => f.type === 'RESTAURANT');
+
+        if (restaurantFavorites.length === 0) {
+            contentBody.innerHTML = '<p>찜한 식당이 없습니다.</p>';
+            return;
+        }
+
+        // 각 식당 정보 조회
+        const restaurantPromises = restaurantFavorites.map(fav =>
+            fetchAPI(`${API_BASE_URL}/common/restaurants/${fav.restaurantId}`)
+        );
+
+        const restaurantResponses = await Promise.all(restaurantPromises);
+        const restaurants = restaurantResponses.map(r => r.data);
+
+        contentBody.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                ${restaurants.map((restaurant, index) => `
+                    <div class="restaurant-card" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;">
+                        <h3 style="margin: 0 0 10px 0;">${restaurant.restaurantName}</h3>
+                        <p style="color: #666; font-size: 14px; margin: 5px 0;">
+                            ${restaurant.address.fullAddress}
+                        </p>
+                        <div style="margin-top: 15px; display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="showRestaurantDetail('${restaurant.restaurantId}')">
+                                상세보기
+                            </button>
+                            <button class="btn btn-danger" onclick="removeFavorite('${restaurantFavorites[index].id}')">
+                                찜 취소
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } catch (error) {
+        contentBody.innerHTML = `<p style="color: red;">찜 목록을 불러오는데 실패했습니다: ${error.message}</p>`;
+    }
+}
+
+async function removeFavorite(favoriteId) {
+    try {
+        await fetchAPI(`${API_BASE_URL}/customers/favorites/${favoriteId}`, { method: 'DELETE' });
+        alert('찜이 취소되었습니다.');
+        renderWishlist();
+    } catch (error) {
+        alert('찜 취소 실패: ' + error.message);
+    }
+}
+
+// ============ 결제 테스트 ============
+function renderPaymentTest() {
+    const contentBody = document.getElementById('contentBody');
+    contentBody.innerHTML = `
+        <h3>결제 테스트</h3>
+        <div style="margin: 20px 0;">
+            <p>Toss Payments 결제 시스템을 테스트합니다.</p>
+            <button class="btn btn-primary" id="payButton" style="margin-top: 20px;">
+                100원 결제하기
+            </button>
+        </div>
+    `;
+
+    setupPayment();
+}
+
+async function setupPayment() {
+    const clientKey = "test_ck_yZqmkKeP8g4baNqxOKLp3bQRxB9l";
+    const tossPayments = await TossPayments(clientKey);
+
+    let customerKey = localStorage.getItem("customerKey");
+    if (!customerKey) {
+        customerKey = crypto.randomUUID();
+        localStorage.setItem("customerKey", customerKey);
+    }
+
+    const payment = tossPayments.payment({ customerKey });
+
+    document.getElementById("payButton").addEventListener("click", async () => {
+        try {
+            await payment.requestPayment({
+                method: "CARD",
+                amount: {
+                    currency: "KRW",
+                    value: 100
+                },
+                orderId: generateOrderId(),
+                orderName: "테스트 결제",
+                customerName: "사용자",
+                successUrl: `${window.location.origin}${window.location.pathname}?payment=success`,
+                failUrl: `${window.location.origin}${window.location.pathname}?payment=fail`,
+            });
+        } catch (error) {
+            console.error("결제 오류:", error);
+            alert("결제 요청 중 오류가 발생했습니다.");
+        }
+    });
+}
+
+// ============ 결제 콜백 ============
+function checkPaymentCallback() {
+    const paymentKey = urlParams.get('paymentKey');
+    const orderId = urlParams.get('orderId');
+    const amount = urlParams.get('amount');
+    const orderSuccess = urlParams.get('orderSuccess');
+    const orderFail = urlParams.get('orderFail');
+
+    if (orderSuccess && paymentKey && orderId) {
+        // 주문 결제 성공
+        createOrderAfterPayment(paymentKey, orderId, amount);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (orderFail) {
+        // 주문 결제 실패
+        alert('결제가 취소되었습니다.');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentKey && orderId) {
+        // 일반 결제 테스트 성공
+        showPaymentResult({
+            success: true,
+            paymentKey: paymentKey,
+            orderId: orderId,
+            amount: amount
+        });
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+function showPaymentResult(result) {
+    const modalBody = document.getElementById('paymentModalBody');
+
+    if (result.success) {
+        modalBody.innerHTML = `
+            <div style="border:1px solid #10b981; padding:20px; border-radius:8px; background:#f0fdf4;">
+                <h3 style="color:#10b981; margin-bottom:15px;">결제 완료</h3>
+                <p><strong>결제 금액:</strong> ${result.amount}원</p>
+                <p><strong>주문번호:</strong> ${result.orderId}</p>
+                <p><strong>paymentKey:</strong> ${result.paymentKey}</p>
+            </div>
+        `;
+    }
+
+    document.getElementById('paymentModal').classList.add('show');
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('show');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+}
+
+function generateOrderId() {
+    return "order_" + Math.random().toString(36).slice(2, 11);
+}
+
+// ============ 페이지 로드 ============
+const token = getToken();
+
+if (!token) {
+    window.location.href = "/view/client/login";
+} else {
+    renderMainLayout();
+}

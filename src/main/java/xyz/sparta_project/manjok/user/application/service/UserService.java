@@ -10,6 +10,7 @@ import xyz.sparta_project.manjok.user.domain.entity.User;
 import xyz.sparta_project.manjok.user.domain.repository.UserRepository;
 import xyz.sparta_project.manjok.user.domain.vo.Role;
 import xyz.sparta_project.manjok.user.domain.vo.UserAddress;
+import xyz.sparta_project.manjok.user.exception.UserErrorCode;
 import xyz.sparta_project.manjok.user.exception.UserException;
 import xyz.sparta_project.manjok.user.infrastructure.security.userdetails.CustomUserDetails;
 import xyz.sparta_project.manjok.user.presentation.dto.UserAddressRequest;
@@ -30,12 +31,12 @@ public class UserService {
 	public ApiResponse<UserResponse> getUser() {
 		User user = SecurityUtils.getCurrentUserDetails().map(CustomUserDetails::getUser)
 								 .orElseThrow(() -> new UserException(GlobalErrorCode.INVALID_SECURITY_CONTEXT));
-		return ApiResponse.success(new UserResponse(user.getUsername(), user.getEmail(), user.getAddresses()));
+		return ApiResponse.success(new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getAddresses()));
 	}
 
 	public ApiResponse<UserResponse> getUser(String userId) {
 		User user = findUser(userId);
-		return ApiResponse.success(new UserResponse(user.getUsername(), user.getEmail(), user.getAddresses()));
+		return ApiResponse.success(new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getAddresses()));
 	}
 
 	public ApiResponse<?> deleteUser(String userId) {

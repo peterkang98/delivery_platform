@@ -39,6 +39,14 @@ public class EventConsumer {
     @EventListener
     @Transactional
     public void handleEvent(Object event) {
+        String fqn = event.getClass().getName();
+        if (!fqn.startsWith("xyz.sparta_project.manjok.global.infrastructure.event.dto")) {
+            // 스프링/테스트 내부 이벤트(PrepareTestInstanceEvent 등) 무시
+            if (log.isDebugEnabled()) {
+                log.debug("도메인 외 이벤트 무시: {}", event.getClass().getSimpleName());
+            }
+            return;
+        }
         // RetryEvent는 별도 핸들러에서 처리
         if (event instanceof EventRetryService.RetryEvent) {
             return;

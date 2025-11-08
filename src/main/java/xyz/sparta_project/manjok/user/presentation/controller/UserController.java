@@ -19,7 +19,8 @@ public class UserController {
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<UserResponse>> getUser() {
-		return ResponseEntity.ok(userService.getUser());
+        System.out.println("인증");
+        return ResponseEntity.ok(userService.getUser());
 	}
 
 	@GetMapping("/{userId}")

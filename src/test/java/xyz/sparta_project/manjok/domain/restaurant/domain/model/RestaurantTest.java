@@ -20,7 +20,7 @@ class RestaurantTest {
     private Restaurant restaurant;
     private Address validAddress;
     private Coordinate validCoordinate;
-    private final Long ownerId = 1L;
+    private final String ownerId = "1";
     private final String ownerName = "김준형";
     private final String userId = "USER001";
 

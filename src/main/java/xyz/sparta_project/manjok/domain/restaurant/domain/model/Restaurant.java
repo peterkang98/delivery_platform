@@ -37,7 +37,7 @@ public class Restaurant {
     private LocalDateTime createdAt;
 
     // 기본정보
-    private Long ownerId;
+    private String ownerId;
     private String ownerName;
     private String restaurantName;
 

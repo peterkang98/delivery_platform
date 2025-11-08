@@ -6,8 +6,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import xyz.sparta_project.manjok.global.infrastructure.email.EmailSentEvent;
+import xyz.sparta_project.manjok.global.infrastructure.event.dto.EmailSentEvent;
 import xyz.sparta_project.manjok.global.infrastructure.event.infrastructure.Events;
+import xyz.sparta_project.manjok.global.infrastructure.event.service.EventPublisher;
 import xyz.sparta_project.manjok.global.presentation.dto.ApiResponse;
 import xyz.sparta_project.manjok.user.domain.entity.User;
 import xyz.sparta_project.manjok.user.domain.entity.VerificationToken;
@@ -34,6 +35,7 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final EmailService emailService;
 	private final VerificationRepository verificationRepository;
+    private final EventPublisher eventPublisher;
 
 	public ApiResponse<?> signUp(SignupRequest request) {
 		User user = User.builder()
@@ -48,7 +50,10 @@ public class AuthService {
 												   .build();
 		userRepository.save(user);
 		verificationRepository.save(token);
-		Events.raise(EmailSentEvent.createVerificationEvent(request.email(), token.getId()));
+//		Events.raise(EmailSentEvent.createVerificationEvent(request.email(), token.getId()));
+        eventPublisher.publish(
+                EmailSentEvent.createVerificationEvent(request.email(), token.getId())
+        );
 
 		return ApiResponse.success(null, "회원가입 성공! 로그인은 이메일 인증 후 가능합니다. 24시간 이내에 이메일 인증을 완료해주세요.");
 	}

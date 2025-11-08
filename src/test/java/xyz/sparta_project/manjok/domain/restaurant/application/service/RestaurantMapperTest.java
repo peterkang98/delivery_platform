@@ -4,10 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import xyz.sparta_project.manjok.domain.restaurant.domain.model.*;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.AdminRestaurantResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantDetailResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.RestaurantSummaryResponse;
-import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.RestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.admin.dto.response.AdminRestaurantResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantDetailResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.customer.dto.response.RestaurantSummaryResponse;
+import xyz.sparta_project.manjok.domain.restaurant.presentation.rest.owner.dto.response.RestaurantResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -55,7 +55,7 @@ class RestaurantMapperTest {
         testRestaurant = Restaurant.builder()
                 .id("REST-12345678")
                 .createdAt(LocalDateTime.now())
-                .ownerId(1L)
+                .ownerId("1")
                 .ownerName("홍길동")
                 .restaurantName("테스트식당")
                 .status(RestaurantStatus.OPEN)
@@ -170,7 +170,7 @@ class RestaurantMapperTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getRestaurantId()).isEqualTo("REST-12345678");
-        assertThat(result.getOwnerId()).isEqualTo(1L);
+        assertThat(result.getOwnerId()).isEqualTo("1");
         assertThat(result.getOwnerName()).isEqualTo("홍길동");
         assertThat(result.getStatus()).isEqualTo(RestaurantStatus.OPEN.name());
 
@@ -195,7 +195,7 @@ class RestaurantMapperTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getRestaurantId()).isEqualTo("REST-12345678");
-        assertThat(result.getOwnerId()).isEqualTo(1L);
+        assertThat(result.getOwnerId()).isEqualTo("1");
         assertThat(result.getStatus()).isEqualTo(RestaurantStatus.OPEN.name());
 
         // 카테고리 검증
@@ -217,7 +217,7 @@ class RestaurantMapperTest {
         Restaurant noCategoryRestaurant = Restaurant.builder()
                 .id("REST-99999999")
                 .createdAt(LocalDateTime.now())
-                .ownerId(2L)
+                .ownerId("2")
                 .ownerName("김철수")
                 .restaurantName("카테고리없는식당")
                 .status(RestaurantStatus.OPEN)
@@ -318,7 +318,7 @@ class RestaurantMapperTest {
         Restaurant noCoordinateRestaurant = Restaurant.builder()
                 .id("REST-88888888")
                 .createdAt(LocalDateTime.now())
-                .ownerId(3L)
+                .ownerId("3")
                 .ownerName("이영희")
                 .restaurantName("좌표없는식당")
                 .status(RestaurantStatus.OPEN)
