@@ -17,6 +17,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
+        ddl-auto: update
         format_sql: true
 
   mail:

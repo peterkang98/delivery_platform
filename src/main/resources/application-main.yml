@@ -12,10 +12,10 @@ spring:
       hibernate:
         show_sql: false
 
-  data:
-    redis:
-      host: localhost
-      port: 6379
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
 
 logging:
   level:

@@ -38,7 +38,7 @@ public class SecurityConfig {
 				.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // 브라우저가 <iframe>에 페이지를 로드할 수 있는지를 결정하는 헤더 (h2 콘솔 접속용)
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 				.authorizeHttpRequests(auth -> {
-					auth.requestMatchers("/v1/auth/**", "/h2-console/**", "/view/**","/",
+					auth.requestMatchers("/v1/auth/**", "/view/**","/",
 							"/static/**", "/css/**", "/js/**","/favicon.ico",
 							"/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html", "/webjars/**"
 					).permitAll();
