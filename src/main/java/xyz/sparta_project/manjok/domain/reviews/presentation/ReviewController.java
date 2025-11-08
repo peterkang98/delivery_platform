@@ -44,6 +44,7 @@ public class ReviewController {
 				request.orderId(),
 				request.restaurantId(),
 				request.menus(),
+                request.rating(),
 				request.content()
 		);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -63,6 +64,16 @@ public class ReviewController {
 		ApiResponse<Page<Review>> response = reviewService.getReviewsByReviewer(reviewerId, page, size, sortType);
 		return ResponseEntity.ok(response);
 	}
+
+    /**
+     * 주문별 리뷰 조회
+     * GET /v1/reviews/order/{orderId}
+     */
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<ApiResponse<?>> getReviewByOrder(@PathVariable String orderId) {
+        ApiResponse<?> response = reviewService.getReviewByOrder(orderId);
+        return ResponseEntity.ok(response);
+    }
 
 	/**
 	 * 리뷰 수정
