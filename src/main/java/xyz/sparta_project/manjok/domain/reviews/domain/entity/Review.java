@@ -1,9 +1,6 @@
 package xyz.sparta_project.manjok.domain.reviews.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +17,13 @@ import java.util.List;
 import static xyz.sparta_project.manjok.domain.reviews.exception.ReviewErrorCode.INVALID_RATING;
 
 @Entity
-@Table(name = "p_review")
+@Table(
+	name = "p_review",
+	indexes = {
+			@Index(name = "idx_review_restaurant_id_created_at", columnList = "restaurantId, created_at DESC"),
+			@Index(name = "idx_review_reviewer_id_created_at", columnList = "reviewerId, created_at DESC")
+	}
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Review extends BaseEntity {

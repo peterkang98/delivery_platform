@@ -50,10 +50,7 @@ public class AuthService {
 												   .build();
 		userRepository.save(user);
 		verificationRepository.save(token);
-//		Events.raise(EmailSentEvent.createVerificationEvent(request.email(), token.getId()));
-        eventPublisher.publish(
-                EmailSentEvent.createVerificationEvent(request.email(), token.getId())
-        );
+		Events.raise(EmailSentEvent.createVerificationEvent(request.email(), token.getId()));
 
 		return ApiResponse.success(null, "회원가입 성공! 로그인은 이메일 인증 후 가능합니다. 24시간 이내에 이메일 인증을 완료해주세요.");
 	}

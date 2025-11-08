@@ -1,5 +1,7 @@
 package xyz.sparta_project.manjok.domain.aiprompt.presentation.rest.owner;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
  * - 기본 경로: /v1/owners/aiprompt
  * - 권한: OWNER
  */
+@Tag(name = "점주용 AI 프롬프트 관리", description = "점주가 AI 프롬프트를 생성, 조회, 수정, 삭제할 수 있는 API")
 @Slf4j
 @RestController
 @RequestMapping("/v1/owners/aiprompt")
@@ -38,6 +41,7 @@ public class AiPromptOwnerController {
      * AI 프롬프트 생성
      * POST /v1/owners/aiprompt
      */
+	@Operation(summary = "AI 프롬프트 생성", description = "점주가 입력한 내용을 바탕으로 AI 프롬프트를 생성하고 저장합니다.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AiPromptHistoryResponse> createPrompt(
@@ -65,6 +69,7 @@ public class AiPromptOwnerController {
      * 메뉴 설명 생성
      * POST /v1/owners/aiprompt/menu-description
      */
+	@Operation(summary = "메뉴 설명 생성", description = "점주가 등록한 메뉴 정보를 기반으로 메뉴 설명을 생성합니다.")
     @PostMapping("/menu-description")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AiPromptHistoryResponse> createMenuDescription(
@@ -91,6 +96,7 @@ public class AiPromptOwnerController {
      * QnA 응답 생성
      * POST /v1/owners/aiprompt/qna
      */
+	@Operation(summary = "QnA 응답 생성", description = "점주가 입력한 질문에 대해 AI가 QnA 응답을 생성하고 저장합니다.")
     @PostMapping("/qna")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AiPromptHistoryResponse> createQna(
@@ -119,6 +125,7 @@ public class AiPromptOwnerController {
      * 히스토리 단건 조회
      * GET /v1/owners/aiprompt/{id}
      */
+	@Operation(summary = "히스토리 단건 조회", description = "ID를 이용해 특정 AI 프롬프트 히스토리를 조회합니다. 요청자는 소유자여야 합니다.")
     @GetMapping("/{id}")
     public ApiResponse<AiPromptHistoryResponse> getHistory(
             @PathVariable String id) {
@@ -137,6 +144,7 @@ public class AiPromptOwnerController {
      * 내 히스토리 목록 조회
      * GET /v1/owners/aiprompt/my
      */
+	@Operation(summary = "내 히스토리 목록 조회", description = "현재 인증된 점주의 AI 프롬프트 히스토리 목록을 조회합니다.")
     @GetMapping("/my")
     public ApiResponse<List<AiPromptHistorySummaryResponse>> getMyHistories() {
 
@@ -158,6 +166,7 @@ public class AiPromptOwnerController {
      * 타입별 히스토리 목록 조회
      * GET /v1/owners/aiprompt/my/type/{promptType}
      */
+	@Operation(summary = "타입별 히스토리 목록 조회", description = "현재 점주의 히스토리를 프롬프트 타입별로 조회합니다.")
     @GetMapping("/my/type/{promptType}")
     public ApiResponse<List<AiPromptHistorySummaryResponse>> getMyHistoriesByType(
             @PathVariable PromptType promptType) {
@@ -183,6 +192,7 @@ public class AiPromptOwnerController {
      * 내 메뉴 설명 목록 조회
      * GET /v1/owners/aiprompt/my/menu-descriptions
      */
+	@Operation(summary = "내 메뉴 설명 목록 조회", description = "점주가 생성한 메뉴 설명 히스토리 목록을 조회합니다.")
     @GetMapping("/my/menu-descriptions")
     public ApiResponse<List<AiPromptHistorySummaryResponse>> getMyMenuDescriptions() {
 
@@ -204,6 +214,7 @@ public class AiPromptOwnerController {
      * 내 QnA 목록 조회
      * GET /v1/owners/aiprompt/my/qnas
      */
+	@Operation(summary = "내 QnA 목록 조회", description = "점주가 생성한 QnA 히스토리 목록을 조회합니다.")
     @GetMapping("/my/qnas")
     public ApiResponse<List<AiPromptHistorySummaryResponse>> getMyQnas() {
 
@@ -225,6 +236,7 @@ public class AiPromptOwnerController {
      * 내 히스토리 통계 조회
      * GET /v1/owners/aiprompt/my/stats
      */
+	@Operation(summary = "내 히스토리 통계 조회", description = "점주의 AI 프롬프트, 메뉴 설명, QnA 히스토리 통계를 조회합니다.")
     @GetMapping("/my/stats")
     public ApiResponse<AiPromptStatsResponse> getMyStats() {
 
@@ -252,6 +264,7 @@ public class AiPromptOwnerController {
      * 응답 재생성
      * POST /v1/owners/aiprompt/{id}/regenerate
      */
+	@Operation(summary = "응답 재생성", description = "특정 히스토리의 AI 응답을 재생성합니다. 요청자는 소유자여야 합니다.")
     @PostMapping("/{id}/regenerate")
     public ApiResponse<AiPromptHistoryResponse> regenerateResponse(
             @PathVariable String id) {
@@ -279,6 +292,7 @@ public class AiPromptOwnerController {
      * 히스토리 삭제
      * DELETE /v1/owners/aiprompt/{id}
      */
+	@Operation(summary = "히스토리 삭제", description = "특정 AI 프롬프트 히스토리를 삭제합니다. 요청자는 소유자여야 합니다.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ApiResponse<Void> deleteHistory(

@@ -20,10 +20,6 @@ public class EmailService {
 	@Value("${backend.base-url}")
 	private String backendBaseUrl;
 
-//	@Value("${frontend.base-url}")
-    @Value("${backend.base-url}")
-	private String frontendBaseUrl;
-
 	@Value("${spring.mail.username}")
 	private String fromEmail;
 
@@ -45,7 +41,7 @@ public class EmailService {
 
 	public void sendPasswordResetEmail(String toEmail, String token) {
 		String subject = "비밀번호 재설정";
-        String resetUrl = frontendBaseUrl + "/view/client/reset?token=" + token;
+        String resetUrl = backendBaseUrl + "/view/client/reset?token=" + token;
 
         String body = createEmailHtml(
                 "비밀번호 재설정",
