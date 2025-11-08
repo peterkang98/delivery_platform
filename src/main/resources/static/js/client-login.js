@@ -166,7 +166,7 @@ function renderSignupPage() {
             <div class="auth-form">
                 <div class="form-group">
                     <label>아이디</label>
-                    <input type="text" id="username" placeholder="4~10자 입력" />
+                    <input type="text" id="username" placeholder="4~10자 (영문 소문자, 숫자)" />
                     <div class="error-message" id="usernameError"></div>
                 </div>
                 <div class="form-group">
@@ -208,8 +208,13 @@ function renderSignupPage() {
         // 유효성 검사
         let hasError = false;
 
-        if (!username || username.length < 4 || username.length > 10) {
-            document.getElementById("usernameError").textContent = "아이디는 4~10자여야 합니다.";
+        const usernamePattern = /^[a-z0-9]{4,10}$/;
+        if (!username) {
+            document.getElementById("usernameError").textContent = "아이디를 입력해주세요.";
+            document.getElementById("usernameError").classList.add("show");
+            hasError = true;
+        } else if (!usernamePattern.test(username)) {
+            document.getElementById("usernameError").textContent = "아이디는 4~10자의 영문 소문자와 숫자만 사용 가능합니다.";
             document.getElementById("usernameError").classList.add("show");
             hasError = true;
         }

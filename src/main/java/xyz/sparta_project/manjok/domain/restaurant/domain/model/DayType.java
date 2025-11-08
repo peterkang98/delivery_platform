@@ -24,14 +24,20 @@ public enum DayType {
     /**
      * 평일인지 확인
      * */
+//    public boolean isWeekday() {
+//        return this != SAT && this != SUN;
+//    }
     public boolean isWeekday() {
-        return this != SAT && this != SUN;
+        return this != SUN;
     }
 
     /**
      * 주말인지 확인
      * */
+//    public boolean isWeekend() {
+//        return this == SAT || this == SUN;
+//    }
     public boolean isWeekend() {
-        return this == SAT || this == SUN;
+        return this == SUN;
     }
 }

@@ -217,8 +217,9 @@ public class OrderCommandService {
 
         // Payment에 환불 요청 이벤트 발행
         // OrderCancelRequestedEvent에 cancelReason 포함
-        orderEventPublisher.publishOrderCancelRequested(order, cancelReason, userId);
-
+//        orderEventPublisher.publishOrderCancelRequested(order, cancelReason, userId);
+        order.cancel(cancelReason,LocalDateTime.now(), userId);
+        orderRepository.save(order);
         log.info("환불 요청 이벤트 발행 완료: orderId={}, paymentId={}",
                 orderId, order.getPayment().getPaymentId());
     }

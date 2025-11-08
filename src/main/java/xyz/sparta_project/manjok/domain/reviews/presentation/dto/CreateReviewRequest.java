@@ -9,6 +9,7 @@ public record CreateReviewRequest(
 		String orderId,
 		String restaurantId,
 		List<Menu> menus,
+        double rating,
 		String content
 ) {
 }

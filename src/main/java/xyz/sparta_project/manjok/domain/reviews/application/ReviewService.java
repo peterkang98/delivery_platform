@@ -36,13 +36,14 @@ public class ReviewService {
 	}
 
 	// 회원 기준으로 리뷰 CRUD
-	public ApiResponse<?> createReview(String reviewerId, String orderId, String restaurantId, List<Menu> menus, String content) {
+	public ApiResponse<?> createReview(String reviewerId, String orderId, String restaurantId, List<Menu> menus,double rating, String content) {
 		Review review = Review.builder()
 							  .orderId(orderId)
 							  .reviewerId(reviewerId)
 							  .restaurantId(restaurantId)
 							  .menus(menus)
 							  .content(content)
+                                .rating(rating)
 							  .build();
 
 		reviewRepository.save(review);
@@ -90,4 +91,12 @@ public class ReviewService {
 			default -> Sort.by(Sort.Direction.DESC, "createdAt"); // 기본값: 최신순
 		};
 	}
+
+    public ApiResponse<?> getReviewByOrder(String orderId) {
+        // orderId로 리뷰 조회 로직
+        Review review = reviewRepository.findByOrderId(orderId)
+                .orElse(null);
+
+        return ApiResponse.success(review);
+    }
 }
