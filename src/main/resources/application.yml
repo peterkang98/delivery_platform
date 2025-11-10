@@ -10,8 +10,8 @@ spring:
       enabled: always
 
   profiles:
-    active: develop
-#    active: main
+#    active: develop
+    active: main
 
   jpa:
     open-in-view: false
@@ -44,9 +44,6 @@ jwt:
 
 backend:
   base-url: ${BASE_URL:http://localhost:8080}
-
-frontend:
-  base-url: ${BASE_URL:http://localhost:3000}
 
 
 springdoc:

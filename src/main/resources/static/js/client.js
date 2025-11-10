@@ -59,7 +59,7 @@ async function fetchAPI(url, options = {}) {
 // 사용자 정보 로드
 async function loadUserInfo() {
     try {
-        const response = await fetchAPI(`${API_BASE_URL}/customers/my-info`);
+        const response = await fetchAPI(`${API_BASE_URL}/v1/users`);
         currentUser = response.data;
         return currentUser;
     } catch (error) {
