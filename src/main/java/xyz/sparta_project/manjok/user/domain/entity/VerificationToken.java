@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class VerificationToken extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "token_type", nullable = false)
+	@Column(name = "token_type", nullable = false, length = 30)
 	private TokenType tokenType;
 
 	@ManyToOne(fetch = FetchType.LAZY)

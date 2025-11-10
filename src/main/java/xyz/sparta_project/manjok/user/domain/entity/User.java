@@ -33,7 +33,7 @@ public class User extends BaseEntity {
 	@Column(length = 60, nullable = false)
 	private String password;
 
-	@Column(nullable = false)
+	@Column(nullable = false, length = 15)
 	@Enumerated(EnumType.STRING)
 	private Role role = Role.CUSTOMER;
 
